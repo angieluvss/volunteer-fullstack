@@ -11,7 +11,7 @@ function App() {
       <CssBaseline />
       <Router>
         <Routes>
-          <Route path="/" element={<VolunteerHistory />} />
+          <Route path="/" element={<HeroPage />} />
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
         </Routes>
       </Router>
