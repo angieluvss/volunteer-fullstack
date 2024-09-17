@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
-import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material'; // Import MUI components
-import NavBar from '../components/NavigationBar'; // Import the NavBar component
-import './VolunteerHistory.css'; // Import your custom CSS file
+import { useNavigate } from 'react-router-dom';
+import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import NavBar from '../components/NavigationBar';
+import './VolunteerHistory.css';
 
 function VolunteerHistory() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ function VolunteerHistory() {
       location: 'Location 1',
       date: '2024-09-11',
       urgency: 'high',  
+      skills: 'Leadership, Communication',
       status: 'yes'
     },
   ]);
@@ -25,6 +26,7 @@ function VolunteerHistory() {
     location: '',
     date: '',
     urgency: 'low',
+    skills: '',
     status: 'no',
   });
 
@@ -38,7 +40,7 @@ function VolunteerHistory() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setEvents([...events, { ...newEvent, id: events.length + 1 }]);
-    setNewEvent({ name: '', description: '', location: '', date: '', urgency: 'low', status: 'no' });
+    setNewEvent({ name: '', description: '', location: '', date: '', urgency: 'low', skills: '', status: 'no' });
   };
 
   const handleLogout = () => {
@@ -49,24 +51,24 @@ function VolunteerHistory() {
     <div style={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(to right, #febac2, #f68181)', 
-      paddingTop: '0px', // Remove extra padding or margin above the content
+      paddingTop: '0px', 
       marginTop: '0px'
     }}>
       {/* Include the Navigation Bar */}
       <NavBar />
 
-      <Container className="volunteer-history-container" maxWidth="md" sx={{ 
+      <Container className="volunteer-history-container" maxWidth="lg" sx={{  // Changed from "md" to "lg"
         backgroundColor: '#fefafa', 
         padding: '40px', 
         borderRadius: '20px', 
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        marginTop: '50px',  // Adjust margin for spacing below navbar
-        textAlign: 'center'
+        marginTop: '50px',  
+        textAlign: 'center',
+        width: '80%'  // Set custom width for more control
       }}>
         <Typography variant="h4" gutterBottom>
           Volunteer History
         </Typography>
-
 
         <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '10px' }}>
           <TextField
@@ -97,6 +99,13 @@ function VolunteerHistory() {
             InputLabelProps={{ shrink: true }}
             required
           />
+          <TextField
+            label="Skills Required"
+            name="skills"
+            value={newEvent.skills}
+            onChange={handleChange}
+            placeholder="Leadership, Communication"
+          />
           <Button variant="contained" color="primary" type="submit" sx={{ height: '55px' }}>
             Add Event
           </Button>
@@ -111,6 +120,7 @@ function VolunteerHistory() {
                 <TableCell><strong>Location</strong></TableCell>
                 <TableCell><strong>Urgency</strong></TableCell>
                 <TableCell><strong>Date</strong></TableCell>
+                <TableCell><strong>Skills Required</strong></TableCell>
                 <TableCell><strong>Status</strong></TableCell>
               </TableRow>
             </TableHead>
@@ -124,6 +134,7 @@ function VolunteerHistory() {
                     {event.urgency}
                   </TableCell>
                   <TableCell>{event.date}</TableCell>
+                  <TableCell>{event.skills}</TableCell>
                   <TableCell className={event.status === 'yes' ? 'status-yes' : 'status-no'}>
                     {event.status === 'yes' ? '✔️' : '❌'}
                   </TableCell>
