@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 import NavBar from '../components/NavigationBar';
-import './VolunteerHistory.css';
 
 function VolunteerHistory() {
-  const navigate = useNavigate();
-
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -14,7 +10,7 @@ function VolunteerHistory() {
       description: 'Description of event 1',
       location: 'Location 1',
       date: '2024-09-11',
-      urgency: 'high',  
+      urgency: 'high',
       skills: 'Leadership, Communication',
       status: 'yes'
     },
@@ -43,10 +39,6 @@ function VolunteerHistory() {
     setNewEvent({ name: '', description: '', location: '', date: '', urgency: 'low', skills: '', status: 'no' });
   };
 
-  const handleLogout = () => {
-    navigate('/');
-  };
-
   return (
     <div style={{ 
       minHeight: '100vh', 
@@ -54,17 +46,17 @@ function VolunteerHistory() {
       paddingTop: '0px', 
       marginTop: '0px'
     }}>
-      {/* Include the Navigation Bar */}
-      <NavBar />
+      {/* Use the NavBar with only the Logout button */}
+      <NavBar isLogoutOnly={true} /> {/* Only shows the logout button */}
 
-      <Container className="volunteer-history-container" maxWidth="lg" sx={{  // Changed from "md" to "lg"
+      <Container className="volunteer-history-container" maxWidth="lg" sx={{  
         backgroundColor: '#fefafa', 
         padding: '40px', 
         borderRadius: '20px', 
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         marginTop: '50px',  
         textAlign: 'center',
-        width: '80%'  // Set custom width for more control
+        width: '80%'
       }}>
         <Typography variant="h4" gutterBottom>
           Volunteer History
