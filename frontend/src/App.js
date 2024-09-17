@@ -1,7 +1,10 @@
 // src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate  } from 'react-router-dom';
+
 import EventForm from './pages/Eventform';
+import VolunteerHistory from './pages/VolunteerHistory';
+import Header from './pages/Header'
 
 function App() {
   return (
@@ -9,6 +12,11 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/event-form" element={<EventForm />} />
+
+        <Route path="/event-form" element={<EventForm />} />
+        <Route path="/volunteer-history" element={<VolunteerHistory />} />
+        <Route path="*" element={<Navigate to="/" />} /> {/* Redirect any invalid URL to home */}
+        
         {/* Add other routes here */}
       </Routes>
     </Router>

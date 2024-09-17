@@ -1,0 +1,38 @@
+.volunteer-history-container {
+    padding: 40px;
+    text-align: center;
+    background-color: #fefafa;
+    border-radius: 20px;
+    width: 80%;
+    margin: 50px auto;
+  }
+  
+  .event-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  .event-table th,
+  .event-table td {
+    border: 1px solid #fdfbfb;
+    padding: 12px;
+  }
+  
+  .high-urgency {
+    color: red;
+    font-weight: bold;
+  }
+  
+  .low-urgency {
+    color: green;
+  }
+  
+  .status-yes {
+    color: green;
+  }
+  
+  .status-no {
+    color: red;
+  }
+  
