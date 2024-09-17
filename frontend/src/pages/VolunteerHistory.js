@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate from react-router-dom
-import './VolunteerHistory.css'; // CSS file for styling
+import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material'; // Import MUI components
+import NavBar from '../components/NavigationBar'; // Import the NavBar component
+import './VolunteerHistory.css'; // Import your custom CSS file
 
 function VolunteerHistory() {
-  const navigate = useNavigate(); // Hook to redirect
+  const navigate = useNavigate();
 
-  // Sample events state, can remove if you want
   const [events, setEvents] = useState([
     {
       id: 1,
@@ -13,18 +14,20 @@ function VolunteerHistory() {
       description: 'Description of event 1',
       location: 'Location 1',
       date: '2024-09-11',
+      urgency: 'high',  
+      status: 'yes'
     },
   ]);
 
-  // State for the new event
   const [newEvent, setNewEvent] = useState({
     name: '',
     description: '',
     location: '',
     date: '',
+    urgency: 'low',
+    status: 'no',
   });
 
-  // Handle input change
   const handleChange = (e) => {
     setNewEvent({
       ...newEvent,
@@ -32,86 +35,106 @@ function VolunteerHistory() {
     });
   };
 
-  // Handle form submission to add new event
   const handleSubmit = (e) => {
     e.preventDefault();
     setEvents([...events, { ...newEvent, id: events.length + 1 }]);
-    setNewEvent({ name: '', description: '', location: '', date: '' });
+    setNewEvent({ name: '', description: '', location: '', date: '', urgency: 'low', status: 'no' });
   };
 
-  // Handle Logout
   const handleLogout = () => {
-    // Perform any logout logic if necessary (e.g., clearing tokens, user data)
-    navigate('/'); // Redirect to the home page
+    navigate('/');
   };
 
   return (
-    <div className="volunteer-history-container">
-      <h2>Volunteer History</h2>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(to right, #febac2, #f68181)', 
+      paddingTop: '0px', // Remove extra padding or margin above the content
+      marginTop: '0px'
+    }}>
+      {/* Include the Navigation Bar */}
+      <NavBar />
 
-      {/* Logout button */}
-      <button onClick={handleLogout} className="logout-btn">
-        Log Out
-      </button>
+      <Container className="volunteer-history-container" maxWidth="md" sx={{ 
+        backgroundColor: '#fefafa', 
+        padding: '40px', 
+        borderRadius: '20px', 
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+        marginTop: '50px',  // Adjust margin for spacing below navbar
+        textAlign: 'center'
+      }}>
+        <Typography variant="h4" gutterBottom>
+          Volunteer History
+        </Typography>
 
-      {/* Form to add a new event */}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Event Name"
-          value={newEvent.name}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="description"
-          placeholder="Event Description"
-          value={newEvent.description}
-          onChange={handleChange}
-        />
-        <input
-          type="text"
-          name="location"
-          placeholder="Location"
-          value={newEvent.location}
-          onChange={handleChange}
-        />
-        <input
-          type="date"
-          name="date"
-          value={newEvent.date}
-          onChange={handleChange}
-          required
-        />
-        <button type="submit">Add Event</button>
-      </form>
 
-      {/* Table to display the events */}
-      <table className="event-table">
-        <thead>
-          <tr>
-            <th>Event Name</th>
-            <th>Description</th>
-            <th>Location</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {events.map((event) => (
-            <tr key={event.id}>
-              <td>{event.name}</td>
-              <td>{event.description}</td>
-              <td>{event.location}</td>
-              <td>{event.date}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+        <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '10px' }}>
+          <TextField
+            label="Event Name"
+            name="name"
+            value={newEvent.name}
+            onChange={handleChange}
+            required
+          />
+          <TextField
+            label="Event Description"
+            name="description"
+            value={newEvent.description}
+            onChange={handleChange}
+          />
+          <TextField
+            label="Location"
+            name="location"
+            value={newEvent.location}
+            onChange={handleChange}
+          />
+          <TextField
+            label="Date"
+            name="date"
+            type="date"
+            value={newEvent.date}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+            required
+          />
+          <Button variant="contained" color="primary" type="submit" sx={{ height: '55px' }}>
+            Add Event
+          </Button>
+        </form>
+
+        <TableContainer component={Paper} className="event-table">
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell><strong>Event Name</strong></TableCell>
+                <TableCell><strong>Description</strong></TableCell>
+                <TableCell><strong>Location</strong></TableCell>
+                <TableCell><strong>Urgency</strong></TableCell>
+                <TableCell><strong>Date</strong></TableCell>
+                <TableCell><strong>Status</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {events.map((event) => (
+                <TableRow key={event.id}>
+                  <TableCell>{event.name}</TableCell>
+                  <TableCell>{event.description}</TableCell>
+                  <TableCell>{event.location}</TableCell>
+                  <TableCell className={event.urgency === 'high' ? 'high-urgency' : 'low-urgency'}>
+                    {event.urgency}
+                  </TableCell>
+                  <TableCell>{event.date}</TableCell>
+                  <TableCell className={event.status === 'yes' ? 'status-yes' : 'status-no'}>
+                    {event.status === 'yes' ? '✔️' : '❌'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Container>
     </div>
   );
 }
 
 export default VolunteerHistory;
-

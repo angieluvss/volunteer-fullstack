@@ -1,34 +1,21 @@
-// src/App.js
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate  } from 'react-router-dom';
-
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from './theme'; // Import the theme
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HeroPage from './pages/HeroPage';
-import EventForm from './pages/Eventform';
 import VolunteerHistory from './pages/VolunteerHistory';
-import Header from './pages/Header'
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HeroPage />} />
-        <Route path="/event-form" element={<EventForm />} />
-
-        <Route path="/event-form" element={<EventForm />} />
-        <Route path="/volunteer-history" element={<VolunteerHistory />} />
-        <Route path="*" element={<Navigate to="/" />} /> {/* Redirect any invalid URL to home */}
-        
-        {/* Add other routes here */}
-      </Routes>
-    </Router>
-  );
-}
-
-function Home() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <h1 className="text-3xl font-bold">Welcome to the Home Page</h1>
-    </div>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/" element={<VolunteerHistory />} />
+          <Route path="/volunteer-history" element={<VolunteerHistory />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
   );
 }
 
