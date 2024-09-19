@@ -14,7 +14,7 @@ function NavBar({ isLogoutOnly }) {
       <Toolbar>
         {/* Logo */}
         <IconButton edge="start" color="inherit" aria-label="logo" sx={{ mr: 2 }}>
-          <img src="/Shasta.png" alt="Shasta Logo" style={{ width: '50px', height: '50px' }} />
+          <img src="/shasta.png" alt="Shasta Logo" style={{ width: '50px', height: '50px' }} />
         </IconButton>
 
         {/* Text next to the logo */}
