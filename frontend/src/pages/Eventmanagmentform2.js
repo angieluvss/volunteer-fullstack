@@ -42,12 +42,12 @@ function EventForm() {
 
               {/* Event Name */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-name" className="block mb-2 font-bold">Event Name</label>
+                <label htmlFor="event-name" className="block mb-2 font-bold">Event Name *</label>
                 <input
                   type="text"
                   id="event-name"
                   name="event-name"
-                  placeholder="Enter event name here"
+                  placeholder="Enter event name here *"
                   maxLength={100}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
@@ -56,12 +56,12 @@ function EventForm() {
 
               {/* Event Description */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-description" className="block mb-2 font-bold">Event Description</label>
+                <label htmlFor="event-description" className="block mb-2 font-bold">Event Description *</label>
                 <textarea
                   id="event-description"
                   name="event-description"
                   rows="5"
-                  placeholder="Enter event description here"
+                  placeholder="Enter event description here *"
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100 resize-none"
                 ></textarea>
@@ -70,7 +70,7 @@ function EventForm() {
 
             {/* Event Location */}
             <div className="mb-4">
-              <label className="block mb-2 font-bold">Event Location</label>
+              <label className="block mb-2 font-bold">Event Location *</label>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <input
                   type="text"
@@ -85,7 +85,7 @@ function EventForm() {
                   type="text"
                   id="address2"
                   name="address2"
-                  placeholder="Address 2 *"
+                  placeholder="Address 2 "
                   maxLength={100}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
@@ -174,7 +174,7 @@ function EventForm() {
 
               {/* Required Skills */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="skills" className="block mb-2 font-bold">Select Required Skills</label>
+                <label htmlFor="skills" className="block mb-2 font-bold">Select Required Skills *</label>
                 <Select
                   options={skillOptions}
                   value={selectedOptions}
@@ -185,7 +185,7 @@ function EventForm() {
 
               {/* Urgency */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="urgency" className="block mb-2 font-bold">Select Urgency</label>
+                <label htmlFor="urgency" className="block mb-2 font-bold">Select Urgency *</label>
                 <select
                   name="urgency"
                   id="urgency"
