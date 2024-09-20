@@ -54,7 +54,7 @@ function VolunteerHistory() {
         padding: '40px', 
         borderRadius: '20px', 
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        marginTop: '50px',  
+        marginTop: '100px',  
         textAlign: 'center',
         width: '80%'
       }}>

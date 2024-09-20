@@ -8,7 +8,7 @@ function AdminDashboard() {
       {/* Navigation Bar with only the logout button */}
       {/* <NavBar isLogoutOnly={true} /> Only shows the logout button */}
 
-      <Box sx={{ textAlign: 'left', padding: '20rem', paddingTop: '3rem' }}>
+      <Box sx={{ textAlign: 'left', padding: '20rem', paddingTop: '8rem' }}>
         <Typography variant="h2" sx={{ fontWeight: 'bold', marginBottom: '2rem', textAlign: 'left' }}>
           Welcome Admin
         </Typography>
