@@ -1,121 +1,65 @@
 import React from 'react';
-import { Button, Typography, Box } from '@mui/material';
-// import NavBar from '../components/NavigationBar'; // Import the updated NavBar component
+import NavBar from '../components/NavBar'; // Ensure the path is correct
 
-function AdminDashboard() {
+const AdminDashboard = ({ token, setToken }) => {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
-      {/* Navigation Bar with only the logout button */}
-      {/* <NavBar isLogoutOnly={true} /> Only shows the logout button */}
+    <div className="min-h-screen bg-white">
+      {/* Navigation Bar with token and setToken passed in */}
+      <NavBar token={token} setToken={setToken} />
 
-      <Box sx={{ textAlign: 'left', padding: '20rem', paddingTop: '3rem' }}>
-        <Typography variant="h2" sx={{ fontWeight: 'bold', marginBottom: '2rem', textAlign: 'left' }}>
-          Welcome Admin
-        </Typography>
+      <div className="text-left px-16 pt-32">
+        <h2 className="text-5xl font-bold mb-8 text-red-600 text-center">Welcome Admin</h2>
 
         {/* Flexbox for "Create Event" and "Run Matches" */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '3rem', flexWrap: 'wrap' }}>
-          <Button 
-            variant="outlined" 
-            sx={{
-              fontSize: '1.25rem',
-              padding: '1rem 5rem',
-              borderWidth: '2px',
-              borderColor: '#e21c34',
-              '&:hover': {
-                backgroundColor: '#e21c34',
-                color: '#ffffff',
-              },
-              flex: '1 1 300px', 
-              maxWidth: '400px',
-              margin: '0 auto',
-            }}
-          >
+        <div className="flex justify-center gap-8 mb-12 flex-wrap">
+          <button className="text-2xl py-4 px-16 border-2 border-red-600 hover:bg-red-600 hover:text-white transition-all max-w-xs uppercase tracking-wider font-semibold rounded-lg">
             Create Event
-          </Button>
+          </button>
 
-          <Button 
-            variant="contained" 
-            sx={{
-              fontSize: '1.25rem',
-              padding: '1rem 5rem',
-              backgroundColor: '#e21c34',
-              color: '#ffffff',
-              '&:hover': {
-                backgroundColor: '#d0172b',
-              },
-              flex: '1 1 300px',
-              maxWidth: '400px',
-              margin: '0 auto',
-            }}
-          >
+          <button className="text-2xl py-4 px-16 bg-red-600 text-white hover:bg-red-700 transition-all max-w-xs uppercase tracking-wider font-semibold rounded-lg">
             Run Matches
-          </Button>
-        </Box>
+          </button>
+        </div>
 
-        <Typography variant="h4" sx={{ fontWeight: 'bold', marginBottom: '1.5rem', textAlign: 'left' }}>
-          Manage Events
-        </Typography>
+        <h4 className="text-3xl font-bold mb-6" style={{ paddingLeft: '16%' }}>Manage Events</h4> {/* Adjusted left padding */}
 
         {/* Flexbox for Event Cards */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: '2rem', flexWrap: 'wrap' }}>
-          <Box sx={{ flex: '1 1 300px', textAlign: 'center', maxWidth: '400px' }}>
+        <div className="flex justify-center gap-8 flex-wrap">
+          <div className="flex-1 max-w-md text-center">
             {[1, 1, 1].map((event, index) => (
-              <Box 
-                key={index} 
-                sx={{
-                  marginBottom: '1.5rem',
-                  padding: '1.5rem',
-                  border: '1px solid #e21c34',
-                  borderRadius: '12px',
-                  textAlign: 'center',
-                }}
+              <div
+                key={index}
+                className="mb-6 p-6 border border-red-600 rounded-lg text-center"
               >
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  Event {event}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                  <Typography variant="body1" color="primary" sx={{ cursor: 'pointer' }}>
-                    edit
-                  </Typography>
-                  <Typography variant="body1" color="primary" sx={{ cursor: 'pointer' }}>
-                    volunteers
-                  </Typography>
-                </Box>
-              </Box>
+                <h6 className="text-lg font-bold mb-2">Event {event}</h6>
+                <div className="flex justify-between gap-4">
+                  <span className="text-red-600 cursor-pointer">edit</span>
+                  <span className="text-red-600 cursor-pointer">volunteers</span>
+                </div>
+              </div>
             ))}
-          </Box>
+          </div>
 
-          <Box sx={{ flex: '1 1 300px', textAlign: 'center', maxWidth: '400px' }}>
+          <div className="flex-1 max-w-md text-center">
             {[2, 2, 2].map((event, index) => (
-              <Box 
-                key={index} 
-                sx={{
-                  marginBottom: '1.5rem',
-                  padding: '1.5rem',
-                  border: '1px solid #e21c34',
-                  borderRadius: '12px',
-                  textAlign: 'center',
-                }}
+              <div
+                key={index}
+                className="mb-6 p-6 border border-red-600 rounded-lg text-center"
               >
-                <Typography variant="h6" sx={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  Event {event}
-                </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: '1rem' }}>
-                  <Typography variant="body1" color="primary" sx={{ cursor: 'pointer' }}>
-                    edit
-                  </Typography>
-                  <Typography variant="body1" color="primary" sx={{ cursor: 'pointer' }}>
-                    volunteers
-                  </Typography>
-                </Box>
-              </Box>
+                <h6 className="text-lg font-bold mb-2">Event {event}</h6>
+                <div className="flex justify-between gap-4">
+                  <span className="text-red-600 cursor-pointer">edit</span>
+                  <span className="text-red-600 cursor-pointer">volunteers</span>
+                </div>
+              </div>
             ))}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default AdminDashboard;
+
+
