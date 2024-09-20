@@ -15,56 +15,6 @@ body {
     flex-direction: column; /* This makes sure header stays at the top and content below it */
 }
 
-/* Header */
-
-.logo-container {
-    max-width: 3000px;
-    display: flex;
-    justify-content: space-between;
-    margin: 0 auto;
-    padding: 10px;
-    background-color: white;
-    width: 100%; /* Makes the header take up the full width */
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1); /* Optional: Add a small shadow to separate header */
-}
-
-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    display: flex;
-    align-items: center;
-}
-
-.logo img {
-    background-image: url('../../public/shasta.png'); /* Ensure the correct path */
-    width: 100px; /* Add width if needed */
-    height: auto; /* Ensure the image maintains aspect ratio */
-    background-size: contain; /* Ensure the image fits within the element */
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.logo p {
-    color: grey;
-    font-size: 20px;
-    position: left;
-}
-
-.logout-btn {
-    background-color: #E21C34;
-    color: white;
-    border: none;
-    padding: 10px 30px;
-    height: 43px;
-    border-radius: 20px;
-    font-size: small;
-    cursor: pointer;
-  }
-
 /* Container */
 .container {
     max-width: 80rem;
@@ -146,7 +96,8 @@ p {
     height: 80px;
     background-color: #ddd;
     border-radius: 50%;
-    margin-bottom: 10px;
+    margin: 0 auto 10px auto; /* Top and bottom margin 0 and auto for horizontal centering */
+    display: block; /* Ensure it's treated as a block element for margin auto to work */
 }
 
 .card h3 {
@@ -174,14 +125,17 @@ p {
     display: flex;
     justify-content: space-between;
     margin-top: 15px;
+    width: 100%; /* Ensure actions container takes full width */
 }
 
 .event-selector {
-    padding: 10px;
-    border-radius: 5px;
+    width: 150px;
+    height: 40px;
     border: 1px solid #E91E63;
-    width: 60%;
-}
+    padding: 5px;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
 
 .remove-btn {
     background-color: #E91E63;
