@@ -7,16 +7,7 @@ import volcards from './volcards.css';
 function VolunteerMatchingForm() {
   return (
     <div>
-      <header>
-        <div className="logo-container">
-          <div className="logo">
-          <img src="../../public/shasta.png" alt="Shasta Logo" />
-            <p>Shasta's Coogmunity Service</p>
-          </div>
-          <button className="logout-btn">Log Out</button>
-        </div>
-      </header>
-
+      <NavBar />  {/* Include the NavBar on the page */}
       <main className="content">
         <div className="container">
           <h1>Event Name</h1>
@@ -45,6 +36,125 @@ function VolunteerMatchingForm() {
               </div>
             </div>
             {/* Card 2 */}
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
+            <div className="card">
+              <div className="avatar"></div>
+              <h3>Jane Smith</h3>
+              <div className="tags">
+                <span>javascript</span>
+                <span>management</span>
+              </div>
+              <p className="preferences">
+                preferences: lorem ipsum dolor sit amet...
+              </p>
+              <div className="actions">
+                <select name="event" className="event-selector">
+                  <option>Add to event</option>
+                </select>
+                <button className="remove-btn">remove from event</button>
+              </div>
+            </div>
             <div className="card">
               <div className="avatar"></div>
               <h3>Jane Smith</h3>

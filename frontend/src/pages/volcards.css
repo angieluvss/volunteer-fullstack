@@ -51,6 +51,7 @@ header {
 .logo p {
     color: grey;
     font-size: 20px;
+    position: left;
 }
 
 .logout-btn {
