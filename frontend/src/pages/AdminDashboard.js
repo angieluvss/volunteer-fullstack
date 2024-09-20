@@ -1,12 +1,12 @@
 import React from 'react';
 import { Button, Typography, Box } from '@mui/material';
-import NavBar from '../components/NavigationBar'; // Import the updated NavBar component
+// import NavBar from '../components/NavigationBar'; // Import the updated NavBar component
 
 function AdminDashboard() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
       {/* Navigation Bar with only the logout button */}
-      <NavBar isLogoutOnly={true} /> {/* Only shows the logout button */}
+      {/* <NavBar isLogoutOnly={true} /> Only shows the logout button */}
 
       <Box sx={{ textAlign: 'left', padding: '20rem', paddingTop: '3rem' }}>
         <Typography variant="h2" sx={{ fontWeight: 'bold', marginBottom: '2rem', textAlign: 'left' }}>
