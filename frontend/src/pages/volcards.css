@@ -48,9 +48,9 @@ p {
 }
 
 .view-switch button {
-    border: 1px solid #E91E63;
+    border: 1px solid #E21C34;
     background-color: white;
-    color: #E91E63;
+    color: #E21C34;
     padding: 10px 20px;
     cursor: pointer;
     margin: 0 10px;
@@ -59,7 +59,7 @@ p {
 }
 
 .view-switch .card-active {
-    background-color: #E91E63;
+    background-color: #E21C34;
     color: white;
     align-items: center;
     justify-content: center;
@@ -82,7 +82,7 @@ p {
 .card {
     background-color: white;
     border: 1px solid #E91E63;
-    border-radius: 15px;
+    border-radius: 30px;
     padding: 20px;
     text-align: center;
     box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
@@ -107,8 +107,9 @@ p {
 
 .tags span {
     display: inline-block;
-    background-color: #f0bfc3;
-    color: #E91E63;
+    background-color: #ffffff;
+    border: 1px solid #797979;
+    color: #797979;
     padding: 5px 10px;
     margin: 5px;
     border-radius: 20px;
@@ -131,15 +132,17 @@ p {
 .event-selector {
     width: 150px;
     height: 40px;
-    border: 1px solid #E91E63;
+    border: 1px solid #E21C34;
     padding: 5px;
     border-radius: 5px;
     box-sizing: border-box;
   }
 
 .remove-btn {
-    background-color: #E91E63;
+    background-color: #E21C34;
     color: white;
+    width: 150px;
+    height: 40px;
     border: none;
     padding: 10px 20px;
     border-radius: 5px;
