@@ -1,11 +1,8 @@
 import React from 'react';
-import { Typography, Box, Button } from '@mui/material';
-import '../index.css';
-import './notifs.css'; // Import the CSS file
+import './Updates.css'; // Import the CSS file
 
 const Notifications = () => {
   return (
-
     <div className="updates-container">
       {/* Header Section */}
       <div className="updates-header">
@@ -38,6 +35,5 @@ const Notifications = () => {
     </div>
   );
 };
-
 
 export default Notifications;

@@ -1,81 +1,97 @@
-/* Container for the updates view */
-.updates-container {
-    width: 90%;
-    max-width: 900px;
-    top: 10rem; /* Moves the container down 50px from its normal position */
-    margin: 20px auto;
-    padding: 3rem;
-    background-color: #fff;
-    border-radius: 15px;
-    box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-    position: relative;
-    font-family: 'Arial', sans-serif;
-  }
-  
-  /* Header styling */
-  .updates-header {
-    text-align: center;
-    color: #e74c3c; /* Red for the title */
-    margin-bottom: 20px;
-    position: relative;
-  }
-  
-  .updates-header h2 {
-    font-size: 2rem;
-    font-weight: bold;
-  }
-  
-  .updates-header span {
-    font-size: 1rem;
-    color: #666;
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: transparent;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  
-  /* Update Cards */
-  .update-card {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 15px;
-    border: 1px solid #f08a77;
-  }
-  
-  .update-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .update-header p {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #e74c3c;
-  }
-  
-  .update-date {
-    font-size: 0.85rem;
-    color: #aaa;
-  }
-  
-  .update-message {
-    font-size: 0.9rem;
-    color: #333;
-    margin-top: 10px;
-  }
-  
-  @media screen and (max-width: 768px) {
-    .updates-container {
-      width: 100%;
-      padding: 15px;
-    }
-  }
-  
+/* Container for the entire event view */
+.event-container {
+  width: 90%;
+  top: 20rem; /* Moves the container down 50px from its normal position */
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+  position: relative;
+}
+
+/* Header */
+.event-header {
+  text-align: center;
+  color: #e74c3c; /* Red for the title */
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.event-header h2 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.event-header span {
+  font-size: 1rem;
+  color: #666;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* View Toggle */
+.view-toggle {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.toggle-button {
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 20px;
+  background-color: #ffe4e1;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.toggle-button.active {
+  background-color: #f08a77;
+  color: white;
+}
+
+.toggle-button:hover {
+  background-color: #f08a77;
+  color: white;
+}
+
+/* Table View */
+.table-view table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-view th,
+.table-view td {
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.skill-tag {
+  background-color: #ffe4c4;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-right: 5px;
+  font-size: 0.85rem;
+}
+
+.remove-btn {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background
+}
