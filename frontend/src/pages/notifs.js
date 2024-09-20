@@ -11,25 +11,34 @@ const Notifications = () => {
         <button className="close-button">✖</button>
       </div>
 
-      {/* Update Cards */}
+      {/* Update Card */}
       <div className="update-card">
         <div className="update-header">
-          <p>new event matches for you!!</p>
+          <p className="update-title">new event matches for you!!</p>
           <span className="update-date">Sept 20, 2024 4:44pm</span>
         </div>
         <p className="update-message">
           hey name! we have some upcoming events you have been matched to! Please confirm your attendance
         </p>
       </div>
-
-      {/* More update cards can be added similarly */}
+      {/* Update Card */}
       <div className="update-card">
         <div className="update-header">
-          <p>reminder for an upcoming event</p>
-          <span className="update-date">Sept 22, 2024 10:00am</span>
+          <p className="update-title">new event matches for you!!</p>
+          <span className="update-date">Sept 20, 2024 4:44pm</span>
         </div>
         <p className="update-message">
-          Just a friendly reminder to confirm your attendance for the upcoming event.
+          hey name! we have some upcoming events you have been matched to! Please confirm your attendance
+        </p>
+      </div>
+      {/* Update Card */}
+      <div className="update-card">
+        <div className="update-header">
+          <p className="update-title">new event matches for you!!</p>
+          <span className="update-date">Sept 20, 2024 4:44pm</span>
+        </div>
+        <p className="update-message">
+          hey name! we have some upcoming events you have been matched to! Please confirm your attendance
         </p>
       </div>
     </div>
