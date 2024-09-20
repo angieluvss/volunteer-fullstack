@@ -33,7 +33,7 @@ function Volunteermanagmentform() {
     
       
 
-      <div className="flex items-center justify-center min-h-screen bg-[#faa0a5]">
+      <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Start Volunteering by Completing Your Profile</h2>
           <form>
@@ -48,7 +48,7 @@ function Volunteermanagmentform() {
                   id="first-name"
                   name="first-name"
                   placeholder="Enter your first name here"
-                  maxLength={100}
+                  maxLength={50}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
@@ -58,7 +58,7 @@ function Volunteermanagmentform() {
                   id="last-name"
                   name="last-name"
                   placeholder="Enter your last name here"
-                  maxLength={100}
+                  maxLength={50}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
@@ -183,12 +183,12 @@ function Volunteermanagmentform() {
               </div>
               {/* Event Description */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-description" className="block mb-2 font-bold">Event Description</label>
+                <label htmlFor="event-description" className="block mb-2 font-bold">Preferences</label>
                 <textarea
-                  id="event-description"
-                  name="event-description"
+                  id="Preferences "
+                  name="Preferences "
                   rows="5"
-                  placeholder="Enter event description here"
+                  placeholder="Enter Preferences here"
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100 resize-none"
                 ></textarea>
@@ -207,12 +207,11 @@ function Volunteermanagmentform() {
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 /> */}
 
-                // 
                 <DatePicker
-  multiple
-  value={values}
-  onChange={setValues}
-/>
+                  multiple
+                  value={values}
+                  onChange={setValues}
+                />
                 <input
                   type="time"
                   name="event-time"
