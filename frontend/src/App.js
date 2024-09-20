@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import HeroPage from './pages/HeroPage';
 import VolunteerHistory from './pages/VolunteerHistory';
 import AdminDashboard from './pages/AdminDashboard';
-import volcards from './pages/volcards';
+import VolunteerMatchingForm from './pages/volcards';
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
           <Route path="/heropage" element={<HeroPage />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
-          <Route path="/volcards" element={<volcards />} />
+          <Route path="/volcards" element={<VolunteerMatchingForm />} />
         </Routes>
       </Router>
     </ThemeProvider>

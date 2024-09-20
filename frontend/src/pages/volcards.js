@@ -26,17 +26,16 @@ function VolunteerMatchingForm() {
             <button>Table View</button>
           </div>
           <section className="volunteer-cards">
-            {/* Example of a volunteer card */}
+            {/* Card 1 */}
             <div className="card">
               <div className="avatar"></div>
               <h3>John Doe</h3>
               <div className="tags">
                 <span>python</span>
                 <span>leadership</span>
-                <span>gbaffagfa</span>
               </div>
               <p className="preferences">
-                preferences: ARGORJPOGwrfgojlkJNaorgnarg orgkrwlIROGh gOIWRFOP gOg [gorhgaj GOdWgolog rqjhg r wblyjf.. FOr FOlweFIG Gwegwg WGWg wrg
+                preferences: lorem ipsum dolor sit amet...
               </p>
               <div className="actions">
                 <select name="event" className="event-selector">
@@ -45,17 +44,16 @@ function VolunteerMatchingForm() {
                 <button className="remove-btn">remove from event</button>
               </div>
             </div>
-            {/* Repeat the card structure as necessary */}
+            {/* Card 2 */}
             <div className="card">
               <div className="avatar"></div>
-              <h3>John Doe</h3>
+              <h3>Jane Smith</h3>
               <div className="tags">
-                <span>python</span>
-                <span>leadership</span>
-                <span>gbaffagfa</span>
+                <span>javascript</span>
+                <span>management</span>
               </div>
               <p className="preferences">
-                preferences: ARGORJPOGwrfgojlkJNaorgnarg orgkrwlIROGh gOIWRFOP gOg [gorhgaj GOdWgolog rqjhg r wblyjf.. FOr FOlweFIG Gwegwg WGWg wrg
+                preferences: lorem ipsum dolor sit amet...
               </p>
               <div className="actions">
                 <select name="event" className="event-selector">
@@ -64,6 +62,7 @@ function VolunteerMatchingForm() {
                 <button className="remove-btn">remove from event</button>
               </div>
             </div>
+            {/* Repeat as needed */}
           </section>
         </div>
       </main>
