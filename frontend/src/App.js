@@ -12,6 +12,7 @@ import VolunteerDashboard from './pages/VolunteerDashboard';
 import VolunteerMatchingForm from './pages/volcards';
 import Volunteermanagmentform from './pages/Volunteermanagmentform2';
 import EventForm from './pages/Eventmanagmentform2';
+import Notifications from './pages/notifs';
 
 function App() {
   const [token, setToken] = useState(false); // login/logout
@@ -30,6 +31,7 @@ function App() {
           <Route path="/volcards" element={<VolunteerMatchingForm />} />
           <Route path="/volunteermanagmentform" element={<Volunteermanagmentform />} />
           <Route path="/eventmanagmentform" element={<EventForm />} />
+          <Route path="/notifs" element={<Notifications />} />
         </Routes>
       </Router>
     </ThemeProvider>
