@@ -1,13 +1,13 @@
 import React from 'react';
 import { Typography, Box, Button } from '@mui/material';
-import NavBar from '../components/NavigationBar'; // Import the reusable NavBar component
+// import NavBar from '../components/NavigationBar'; // Import the reusable NavBar component
 import '../index.css';
 import volcards from './volcards.css';
 
 function VolunteerMatchingForm() {
   return (
     <div>
-      <NavBar />  {/* Include the NavBar on the page */}
+      {/* <NavBar />  Include the NavBar on the page */}
       <main className="content">
         <div className="container">
           <h1>Event Name</h1>

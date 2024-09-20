@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
-import NavBar from '../components/NavigationBar';
+// import NavBar from '../components/NavigationBar';
 
 function VolunteerHistory() {
   const [events, setEvents] = useState([
@@ -47,7 +47,7 @@ function VolunteerHistory() {
       marginTop: '0px'
     }}>
       {/* Use the NavBar with only the Logout button */}
-      <NavBar isLogoutOnly={true} /> {/* Only shows the logout button */}
+      {/* <NavBar isLogoutOnly={true} /> Only shows the logout button */}
 
       <Container className="volunteer-history-container" maxWidth="lg" sx={{  
         backgroundColor: '#fefafa', 
