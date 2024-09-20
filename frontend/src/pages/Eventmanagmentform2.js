@@ -33,7 +33,7 @@ function EventForm() {
      
       
 
-      <div className="flex items-center justify-center min-h-screen bg-[#faa0a5]">
+      <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Event Management Form</h2>
           <form>
@@ -214,13 +214,13 @@ function EventForm() {
                   value={values}
                   onChange={setValues}
                   className='p-5'
-                  inputClass='w-[full] bg-white boder-2 border-green-700'
+                  // inputClass='w-[50%] bg-white boder-2 border-black-700'
                 />
                 <input
                   type="time"
                   name="event-time"
                   id="event-time"
-                  className="w-[50%] px-3 py-2 border rounded-md text-gray-900 bg-gray-100"
+                  className="w-[50%] px-5 py-2 border rounded-md text-gray-900 bg-gray-100"
                 />
               </div>
             </div>
