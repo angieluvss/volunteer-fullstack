@@ -42,22 +42,22 @@ function Volunteermanagmentform() {
 
               {/* Full Name */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-name" className="block mb-2 font-bold">Enter your Name</label>
+                <label htmlFor="event-name" className="block mb-2 font-bold">Enter your Name *</label>
                 <input
                   type="text"
                   id="first-name"
                   name="first-name"
-                  placeholder="Enter your first name here"
+                  placeholder="Enter your first name here *"
                   maxLength={50}
                   required
-                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                  className="w-full px-3 py-2 my-4 border rounded-md bg-gray-100"
                 />
       
                 <input
                   type="text"
                   id="last-name"
                   name="last-name"
-                  placeholder="Enter your last name here"
+                  placeholder="Enter your last name here *"
                   maxLength={50}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
@@ -84,9 +84,9 @@ function Volunteermanagmentform() {
                   type="text"
                   id="address2"
                   name="address2"
-                  placeholder="Address 2 *"
+                  placeholder="Address 2"
                   maxLength={100}
-                  required
+
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
                 <input
@@ -104,7 +104,7 @@ function Volunteermanagmentform() {
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 >
-                  <option value="">Select State</option>
+                  <option value="">Select State *</option>
                   <option value="AL">Alabama</option>
                   <option value="AK">Alaska</option>
                   <option value="AZ">Arizona</option>
@@ -170,19 +170,7 @@ function Volunteermanagmentform() {
             </div>
 
             <div className='flex gap-4'>
-
-              {/* Select your Skills */}
-              <div className="mb-4 w-[50%]">
-                <label htmlFor="skills" className="block mb-2 font-bold">Select Your Skills</label>
-                <Select
-                  options={skillOptions}
-                  value={selectedOptions}
-                  onChange={handleChange}
-                  isMulti
-                />
-              </div>
-              {/* Event Description */}
-              <div className="mb-4 w-[50%]">
+            <div className="mb-4 w-[50%]">
                 <label htmlFor="event-description" className="block mb-2 font-bold">Preferences</label>
                 <textarea
                   id="Preferences "
@@ -193,12 +181,25 @@ function Volunteermanagmentform() {
                   className="w-full px-3 py-2 border rounded-md bg-gray-100 resize-none"
                 ></textarea>
               </div>
+
+              {/* Select your Skills */}
+              <div className="mb-4 w-[50%]">
+                <label htmlFor="skills" className="block mb-2 font-bold">Select Your Skills *</label>
+                <Select
+                  options={skillOptions}
+                  value={selectedOptions}
+                  onChange={handleChange}
+                  isMulti
+                />
+              </div>
+            
+              
             </div>
 
 
             {/* Date and Time */}
             <div className="mb-6">
-              <label className="block mb-2 font-bold">Date and Time of Event</label>
+              <label className="block mb-2 font-bold">Date and Time of Event *</label>
               <div className="flex flex-col gap-4">
                 {/* <input
                   type="date"
