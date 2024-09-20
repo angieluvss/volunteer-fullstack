@@ -10,6 +10,8 @@ import VolunteerHistory from './pages/VolunteerHistory';
 import AdminDashboard from './pages/AdminDashboard';
 import VolunteerDashboard from './pages/VolunteerDashboard';
 import VolunteerMatchingForm from './pages/volcards';
+import Volunteermanagmentform from './pages/Volunteermanagmentform2';
+import EventForm from './pages/Eventmanagmentform2';
 
 function App() {
   const [token, setToken] = useState(false); // login/logout
@@ -26,6 +28,8 @@ function App() {
           <Route path="/volunteer-dashboard" element={<VolunteerDashboard />} />
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
           <Route path="/volcards" element={<VolunteerMatchingForm />} />
+          <Route path="/volunteermanagmentform" element={<Volunteermanagmentform />} />
+          <Route path="/eventmanagmentform" element={<EventForm />} />
         </Routes>
       </Router>
     </ThemeProvider>
