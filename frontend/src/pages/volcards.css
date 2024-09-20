@@ -1,0 +1,147 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #f8c5c6, #f05454);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column; /* This makes sure header stays at the top and content below it */
+}
+
+/* Container */
+.container {
+    max-width: 80rem;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-height: 900px;
+    overflow-y: auto;
+    margin: 115px auto;
+    justify-content: center;
+}
+
+/* Event Header */
+h1 {
+    color: #E91E63;
+    font-size: 2.5rem;
+}
+
+p {
+    margin: 10px 0;
+    font-size: 1.2rem;
+}
+
+.view-switch {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    align-items: center;
+}
+
+.view-switch button {
+    border: 1px solid #E91E63;
+    background-color: white;
+    color: #E91E63;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin: 0 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.view-switch .card-active {
+    background-color: #E91E63;
+    color: white;
+    align-items: center;
+    justify-content: center;
+}
+
+.volunteer-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two equal-width columns */
+    column-gap: 0.2rem; /* Small horizontal gap between columns */
+    row-gap: 1rem; /* Vertical space between rows */
+    justify-content: center; /* Center the grid horizontally */
+    align-items: center; /* Align cards vertically within the container */
+    margin-top: 20px;
+    width: 100%; /* Ensure the container takes full width */
+    max-width: 800px; /* Limit container width to control layout */
+    margin-left: auto; /* Center container horizontally */
+    margin-right: auto; /* Center container horizontally */
+}
+
+.card {
+    background-color: white;
+    border: 1px solid #E91E63;
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Ensure each card takes full width of its column */
+    max-width: 350px; /* Reduce max width for narrower cards */
+    margin: 0 auto;
+}
+
+.avatar {
+    width: 80px;
+    height: 80px;
+    background-color: #ddd;
+    border-radius: 50%;
+    margin: 0 auto 10px auto; /* Top and bottom margin 0 and auto for horizontal centering */
+    display: block; /* Ensure it's treated as a block element for margin auto to work */
+}
+
+.card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.tags span {
+    display: inline-block;
+    background-color: #f0bfc3;
+    color: #E91E63;
+    padding: 5px 10px;
+    margin: 5px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.preferences {
+    font-size: 0.9rem;
+    color: gray;
+    margin: 15px 0;
+}
+
+.actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+    width: 100%; /* Ensure actions container takes full width */
+}
+
+.event-selector {
+    width: 150px;
+    height: 40px;
+    border: 1px solid #E91E63;
+    padding: 5px;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+
+.remove-btn {
+    background-color: #E91E63;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
