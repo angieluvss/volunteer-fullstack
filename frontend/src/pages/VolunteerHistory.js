@@ -1,20 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
-// import NavBar from '../components/NavigationBar';
 
 function VolunteerHistory() {
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      name: 'Event 1',
-      description: 'Description of event 1',
-      location: 'Location 1',
-      date: '2024-09-11',
-      urgency: 'high',
-      skills: 'Leadership, Communication',
-      status: 'yes'
-    },
-  ]);
+  const [events, setEvents] = useState([]); // State to store events
 
   const [newEvent, setNewEvent] = useState({
     name: '',
@@ -25,6 +14,17 @@ function VolunteerHistory() {
     skills: '',
     status: 'no',
   });
+
+  // Use useEffect to fetch events from the backend when the component loads
+  useEffect(() => {
+    axios.get('http://localhost:4000/api/volunteer-history') // Ensure the URL matches your backend API
+      .then((response) => {
+        setEvents(response.data); // Update events state with data from the backend
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the events!", error);
+      });
+  }, []); // Empty dependency array ensures this runs once when component mounts
 
   const handleChange = (e) => {
     setNewEvent({
@@ -46,9 +46,6 @@ function VolunteerHistory() {
       paddingTop: '0px', 
       marginTop: '0px'
     }}>
-      {/* Use the NavBar with only the Logout button */}
-      {/* <NavBar isLogoutOnly={true} /> Only shows the logout button */}
-
       <Container className="volunteer-history-container" maxWidth="lg" sx={{  
         backgroundColor: '#fefafa', 
         padding: '40px', 
@@ -141,3 +138,4 @@ function VolunteerHistory() {
 }
 
 export default VolunteerHistory;
+
