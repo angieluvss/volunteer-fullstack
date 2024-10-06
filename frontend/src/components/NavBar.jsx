@@ -4,7 +4,7 @@ import { Bars3BottomRightIcon, DocumentChartBarIcon, XMarkIcon } from '@heroicon
 import { assets } from '../assets/assets';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const NavBar = ({ token, setToken }) => {
+const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, setVolunteerFormCompleted, setAdminSetupCompleted }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -111,25 +111,42 @@ const NavBar = ({ token, setToken }) => {
 
                     {/* Buttons */}
                     <div className='flex flex-col md:flex-row md:gap-3'> 
-                        {
-                            token 
-                            ?
-                            (<>
-                                <button onClick={() => navigate('/volunteer-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteer-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Dashboard</button>
+                        { token ? (
+                            <>
+                                {
+                                    token.role === 'admin' && adminSetupCompleted && (
+                                        <button onClick={() => navigate('/admin-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/admin-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Admin Dashboard</button>
+                                    )
+                                }
+                                {
+                                    token.role === 'volunteer' && volunteerFormCompleted && (
+                                        <button onClick={() => navigate('/volunteer-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteer-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Volunteer Dashboard</button>
+                                    )
+                                }
                                 <div className='mb-6 mx-6 md:m-0'>
-                                    <button onClick={() => { setToken(false); navigate('/'); }} className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Log Out</button>
+                                <button 
+                                    onClick={() => { 
+                                        setToken(null); // Set token to null to log out
+                                        setVolunteerFormCompleted(false); // Reset volunteer form completion status
+                                        setAdminSetupCompleted(false); // Reset admin setup completion status
+                                        navigate('/'); // Redirect to home page
+                                    }} 
+                                    className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'
+                                    >
+                                    Log Out
+                                    </button>
                                 </div>
-                            </>)
-                            :
-                            (<>
+                            </>
+                        ) : (
+                            <>
                                 <div className='mt-0 mb-6 mx-6 md:m-0'>
                                     <button onClick={() => navigate('/login')} className='btn static font-medium text-2xl md:text-base font-[Inter] text-lava_black bg-transparent border border-shasta_red py-2 px-4 rounded-2xl hover:bg-light_pink'>Login</button>
                                 </div>
                                 <div className='mb-6 mx-6 md:m-0'>
                                     <button onClick={() => navigate('/register')} className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Get Started</button>
                                 </div>
-                            </>)
-                        }
+                            </>
+                        )}
                     </div>
                 </ul>
             </div>

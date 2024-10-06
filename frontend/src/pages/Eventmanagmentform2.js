@@ -29,10 +29,6 @@ function EventForm() {
   ]
   return (
     <>
-      {/* <navbar> */}
-     
-      
-
       <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Event Management Form</h2>

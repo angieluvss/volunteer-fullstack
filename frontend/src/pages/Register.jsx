@@ -29,7 +29,7 @@ const Register = ({ setToken }) => {
                     {/* SWITCH */}
                     <div>
                         <label className='relative inline-flex cursor-pointer select-none items-center justify-center rounded-2xl bg-snow border border-light_pink'>
-                            <input type='checkbox' className='sr-only' checked={isAdmin} onChange={handleSwitch}/>
+                            <input type='checkbox' className='sr-only' checked={isAdmin} onChange={handleSwitch} />
                             <span className={`flex items-center rounded-2xl py-2 px-6 font-medium transition-all duration-300 ease-in-out ${!isAdmin ? 'text-primary bg-light_pink' : 'text-body-color'}`}>Volunteer</span>
                             <span className={`flex items-center rounded-2xl py-2 px-6 font-medium transition-all duration-300 ease-in-out ${isAdmin ? 'text-primary bg-light_pink' : 'text-body-color'}`}>Admin</span>
                         </label>
@@ -37,13 +37,22 @@ const Register = ({ setToken }) => {
 
                     {/* email/password */}
                     <form action="#" className='m-4 flex flex-col w-2/3 min-w-60 md:min-w-72 max-w-96 text-lg'> 
-                        <input type="text" placeholder="email" className='m-2 bg-light_gray py-2 px-4 rounded-xl'/>
-                        <input type="password" placeholder="password" className='m-2 bg-light_gray py-2 px-4 rounded-xl'/>
-                        <input type="password" placeholder="re-enter password" className='m-2 bg-light_gray py-2 px-4 rounded-xl'/>
+                        <input type="text" placeholder="email" className='m-2 bg-light_gray py-2 px-4 rounded-xl' />
+                        <input type="password" placeholder="password" className='m-2 bg-light_gray py-2 px-4 rounded-xl' />
+                        <input type="password" placeholder="re-enter password" className='m-2 bg-light_gray py-2 px-4 rounded-xl' />
                     </form>
 
                     <div className='mb-6 mx-6 md:m-0'>
-                        <button onClick={() => { setToken(true); navigate('/volunteer-dashboard'); }} className='btn static text-2xl font-bold bg-shasta_red text-snow rounded-2xl py-2 px-8 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Sign Up</button>
+                        <button onClick={() => {
+                            if (isAdmin) {
+                                setToken({ role: 'admin' }); // Set token as object with role 'admin'
+                                navigate('/verify');
+                            } else {
+                                setToken({ role: 'volunteer' }); // Set token as object with role 'volunteer'
+                                navigate('/volunteermanagmentform');
+                            }
+                        }}
+                        className='btn static text-2xl font-bold bg-shasta_red text-snow rounded-2xl py-2 px-8 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Sign Up</button>
                     </div>
                 </div>
             </div>

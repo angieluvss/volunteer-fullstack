@@ -1,0 +1,71 @@
+.custom-calendar {
+    width: 100%;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    background-color: transparent;
+}
+
+/* .calendar-event-tile */
+.custom-calendar .react-calendar__tile .calendar-event-tile {
+    background-color: #ffbbc3;
+    padding: 5px;
+    border-radius: 4px;
+    text-align: center;
+    margin: 10px 0;
+    z-index: 1; /* Ensure the events stay below the day numbers */
+}
+
+.custom-calendar .calendar-event-text {
+    font-family: 'Inter';
+    font-size: 0.8rem;
+    color: #352F36;
+}
+
+.custom-calendar .react-calendar__tile--active {
+    background: #E7E7E7 !important;
+}
+.custom-calendar .react-calendar__tile--active:hover {
+    background: #797979 !important;
+}
+
+/* Change the current day tile color */
+.custom-calendar .react-calendar__tile--now {
+    background: #E7E7E7; /* Replace with your desired color */
+}
+.custom-calendar .react-calendar__tile--now:hover {
+    background: #E7E7E7; /* Change the hover color of the current day */
+}
+
+.custom-calendar .react-calendar__navigation button {
+    color: #352F36;
+    min-width: 44px;
+    background: none;
+    font-size: 16px;
+    margin-top: 8px;
+}
+
+.custom-calendar .react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+    background-color: #E7E7E7;
+}
+
+/* edit the cells */
+.custom-calendar .react-calendar__month-view__days__day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center events horizontally */
+    /*justify-content: center;  Center events vertically */
+    padding-top: 20px;
+    min-height: 100px;
+    gap: 5px;
+}
+
+/* edit the numbers */
+.custom-calendar .react-calendar__month-view__days__day > abbr {
+    font-weight: bold;
+    color: #352F36;
+    position: absolute; /* Position the day number in the top right */
+    top: 5px; 
+    right: 5px;
+}

@@ -1,14 +1,16 @@
 import React from 'react';
 import './notifs.css'; // Import the CSS file
+import { useNavigate } from 'react-router-dom';
 
 const Notifications = () => {
+  const navigate = useNavigate();
   return (
     <div className="updates-container">
       {/* Header Section */}
       <div className="updates-header">
         <h2>Updates</h2>
         <span>View all notices you need to be aware of</span>
-        <button className="close-button">✖</button>
+        <button onClick={() => navigate('/volunteer-dashboard')} className="close-button">✖</button>
       </div>
 
       {/* Update Card */}

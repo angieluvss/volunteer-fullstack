@@ -1,12 +1,12 @@
 import React from 'react';
 import NavBar from '../components/NavBar'; // Ensure the path is correct
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = ({ token, setToken }) => {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Navigation Bar with token and setToken passed in */}
-      <NavBar token={token} setToken={setToken} />
+  const navigate = useNavigate();
 
+  return (
+    <section className="min-h-screen bg-white">
       {/* Outer container to align content */}
       <div className="pt-32 flex flex-col items-center">
         <div className="w-full max-w-6xl px-8">  {/* Adjusted padding here for alignment */}
@@ -14,7 +14,7 @@ const AdminDashboard = ({ token, setToken }) => {
 
           {/* Flexbox for "Create Event" and "Run Matches" */}
           <div className="flex justify-center gap-8 mb-12">
-            <button className="text-2xl py-4 px-24 border-2 border-red-600 hover:bg-red-600 hover:text-white transition-all uppercase tracking-wider font-semibold rounded-lg">
+            <button onClick={() => navigate('/eventmanagmentform')} className="text-2xl py-4 px-24 border-2 border-red-600 hover:bg-red-600 hover:text-white transition-all uppercase tracking-wider font-semibold rounded-lg">
               Create Event
             </button>
 
@@ -36,7 +36,7 @@ const AdminDashboard = ({ token, setToken }) => {
                   <h6 className="text-lg font-bold mb-2">Event {event}</h6>
                   <div className="flex justify-between gap-4">
                     <span className="text-red-600 cursor-pointer">edit</span>
-                    <span className="text-red-600 cursor-pointer">volunteers</span>
+                    <button onClick={() => navigate('/volcards')} className="text-red-600 cursor-pointer">volunteers</button>
                   </div>
                 </div>
               ))}
@@ -51,7 +51,7 @@ const AdminDashboard = ({ token, setToken }) => {
                   <h6 className="text-lg font-bold mb-2">Event {event}</h6>
                   <div className="flex justify-between gap-4">
                     <span className="text-red-600 cursor-pointer">edit</span>
-                    <span className="text-red-600 cursor-pointer">volunteers</span>
+                    <button onClick={() => navigate('/volcards')} className="text-red-600 cursor-pointer">volunteers</button>
                   </div>
                 </div>
               ))}
@@ -59,7 +59,7 @@ const AdminDashboard = ({ token, setToken }) => {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 

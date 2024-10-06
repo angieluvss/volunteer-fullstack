@@ -1,12 +1,13 @@
 // src/EventForm.js
 import React from 'react';
-// import NavBar from '../components/NavigationBar';
+import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { createTheme } from '@mui/material/styles';
 import DatePicker from "react-multi-date-picker";
 import Select from 'react-select';
 
-function Volunteermanagmentform() {
+function Volunteermanagmentform({setVolunteerFormCompleted}) {
+  const navigate = useNavigate();
 
   const today = new Date()
   const tomorrow = new Date()
@@ -27,16 +28,27 @@ function Volunteermanagmentform() {
     { value: 'skill4', label: 'Programming' },
 
   ]
+
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Prevent the default form submission behavior
+  
+    // Check if all required fields are filled
+    const form = e.target;
+    if (!form.checkValidity()) {
+      return; // Do not proceed if the form is invalid
+    }
+  
+    // Navigate to dashboard if all fields are valid
+    setVolunteerFormCompleted(true); // Update volunteer form status
+    navigate('/volunteer-dashboard');
+  };
+
   return (
     <>
-      {/* <navbar> */}
-    
-      
-
       <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Start Volunteering by Completing Your Profile</h2>
-          <form>
+          <form onSubmit={handleSubmit}>
 
             <div className='flex flex-col items-center'>
 
@@ -177,7 +189,6 @@ function Volunteermanagmentform() {
                   name="Preferences "
                   rows="5"
                   placeholder="Enter Preferences here"
-                  required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100 resize-none"
                 ></textarea>
               </div>
