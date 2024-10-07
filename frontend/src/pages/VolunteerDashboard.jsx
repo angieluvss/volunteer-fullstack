@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, Button, Modal, Box, Typography, Tabs, Tab, Card, CardContent, Grid } from '@mui/material';
 import Calendar from 'react-calendar';
@@ -6,79 +6,13 @@ import 'react-calendar/dist/Calendar.css';
 import './VolunteerDashboard.css'; // Custom CSS for additional styling
 import { assets } from '../assets/assets';
 import { CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon, BellIcon } from '@heroicons/react/24/solid';
+import axios from 'axios';
 
 const VolunteerDashboard = () => {
     const navigate = useNavigate();
 
     // State to hold RSVP events for the volunteer
-    const [rsvpEvents, setRsvpEvents] = useState([
-        {
-            id: 1,
-            name: 'Event 1',
-            description: 'Description of event 1',
-            location: 'Location 1',
-            date: '2024-10-17',
-            urgency: 'low',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event1
-        },
-        {
-            id: 2,
-            name: 'Event 2',
-            description: 'Description of event 2',
-            location: 'Location 2',
-            date: '2024-10-27',
-            urgency: 'medium',
-            skills: 'Communication, Adaptability',
-            status: 'waiting',
-            image: assets.event2
-        },
-        {
-            id: 3,
-            name: 'Very long name of event that is exactly 100 characters which is the maximum an event name can be!!!!',
-            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus orci nisl, semper ut ullamcorper sed, consequat id tellus. Aliquam id justo elit. Sed id ipsum viverra, convallis erat vel, efficitur eros. Etiam semper, sem vitae facilisis cursus, justo mi dictum nibh, eu accumsan felis sapien id orci. Maecenas orci tellus, porta non libero eget, finibus vestibulum ante. Curabitur lobortis et eros at pulvinar. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet imperdiet tortor. Quisque ut massa ex.',
-            location: 'Location 3',
-            date: '2024-10-13',
-            urgency: 'high',
-            skills: 'Teamwork, Leadership',
-            status: 'waiting',
-            image: assets.event3
-        },
-        {
-            id: 4,
-            name: 'Event 4 that is the name',
-            description: 'Description of event 4',
-            location: 'Location 4',
-            date: '2024-10-17',
-            urgency: 'medium',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event4
-        },
-        {
-            id: 5,
-            name: 'Event 5',
-            description: 'Description of event 5',
-            location: 'Location 5',
-            date: '2024-10-30',
-            urgency: 'high',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event5
-        },
-        {
-            id: 6,
-            name: 'Event 6 that is the name of the event',
-            description: 'Description of event 6',
-            location: 'Location 6',
-            date: '2024-10-17',
-            urgency: 'medium',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event6
-        }
-    ]);
+    const [rsvpEvents, setRsvpEvents] = useState([]);
 
     const [openModal, setOpenModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -86,6 +20,22 @@ const VolunteerDashboard = () => {
     const [scheduledEvents, setScheduledEvents] = useState([]);
     const [tabIndex, setTabIndex] = useState(0);
     const [availabilityDates, setAvailabilityDates] = useState([]);
+
+    // Use useEffect to fetch events from the backend when the component loads
+    useEffect(() => {
+        axios.get('http://localhost:4000/api/volunteer-dashboard')
+            .then((response) => {
+                // Add base URL for images to ensure they load correctly
+                const eventsWithImages = response.data.map(event => ({
+                    ...event,
+                    image: `http://localhost:4000${event.image}`,
+                }));
+                setRsvpEvents(eventsWithImages); // Update the state with the data from the backend
+            })
+            .catch((error) => {
+                console.error("There was an error fetching the events!", error);
+            });
+    }, []); // Empty dependency array ensures this runs once when component mounts
 
     // Sort events by urgency (high > medium > low)
     const sortedEvents = [...rsvpEvents].sort((a, b) => {
@@ -95,17 +45,34 @@ const VolunteerDashboard = () => {
 
     // Handle RSVP change
     const handleRSVPChange = (id, value) => {
+        const updatedEvent = rsvpEvents.find(event => event.id === id);
+    
         if (value === 'rejected') {
-            setSelectedEvent(rsvpEvents.find(event => event.id === id));
+            setSelectedEvent(updatedEvent);
             setRejectConfirmationOpen(true);
-        } else if (value === 'confirmed') {
-            const confirmedEvent = rsvpEvents.find(event => event.id === id);
-            setScheduledEvents([...scheduledEvents, { ...confirmedEvent, status: 'confirmed' }]);
-            setRsvpEvents(rsvpEvents.filter(event => event.id !== id));
         } else {
-            setRsvpEvents(rsvpEvents.map(event => event.id === id ? { ...event, status: value } : event));
+            // Update status locally
+            const updatedRSVPEvents = rsvpEvents.map(event => 
+                event.id === id ? { ...event, status: value } : event
+            );
+    
+            setRsvpEvents(updatedRSVPEvents);
+    
+            // Update status on the backend
+            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }) // Use the appropriate endpoint
+                .then(response => {
+                    console.log('Event status updated successfully:', response.data);
+                })
+                .catch(error => {
+                    console.error('Error updating the event status:', error);
+                });
+    
+            if (value === 'confirmed') {
+                setScheduledEvents([...scheduledEvents, { ...updatedEvent, status: 'confirmed' }]);
+            }
         }
     };
+    
     
     // Handle open/close modal
     const handleOpenModal = (event) => {
