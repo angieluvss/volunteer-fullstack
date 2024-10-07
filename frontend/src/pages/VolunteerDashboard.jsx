@@ -118,6 +118,9 @@ const VolunteerDashboard = () => {
                         <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
                             edit profile
                         </button>
+                        <button onClick={() => navigate('/volunteer-history')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
+                            view event history
+                        </button>
                     </div>
                     <button onClick={() => navigate('/notifs')} className='bell-container mt-2 md:mt-0'>
                         <BellIcon className='h-8 w-8 text-dark_gray cursor-pointer hover:text-shasta_red transition-colors duration-200' />
