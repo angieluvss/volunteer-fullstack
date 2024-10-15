@@ -3,21 +3,22 @@ import React from 'react';
 import { useState } from "react";
 // import NavBar from '../components/NavigationBar';
 import { createTheme } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 import DatePicker from "react-multi-date-picker";
 import Select from 'react-select';
+import axios from 'axios';
 
-function EventForm() {
+function EventForm({ setEventFormCompleted }) {
+  const navigate = useNavigate();
+  const today = new Date();
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
 
-  const today = new Date()
-  const tomorrow = new Date()
-
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  const [values, setValues] = useState([today, tomorrow])
-  const [selectedOptions, setSelectedOptions] = useState([])
+  const [values, setValues] = useState([today, tomorrow]);
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const handleChange = (selectedOption) => {
-    setSelectedOptions(selectedOption)
-  }
+    setSelectedOptions(selectedOption);
+  };
 
 
   const skillOptions = [
@@ -26,13 +27,53 @@ function EventForm() {
     { value: 'skill3', label: 'Public Speaking' },
     { value: 'skill4', label: 'Programming' },
 
-  ]
+  ];
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+
+    const formatDates = (dates) => {
+      return dates.map(timestamp => {
+        const date = new Date(timestamp);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`; // Change to desired format (e.g., "YYYY-MM-DD")
+      });
+    };
+
+    const eventData = {
+      eventName: form['event-name'].value,
+      eventDescription: form['event-description'].value,
+      address1: form['address1'].value,
+      address2: form['address2'].value,
+      city: form['city'].value,
+      state: form['state'].value,
+      zipcode: form['zipcode'].value,
+      urgency: form['urgency'].value,
+      skills: selectedOptions.map((option) => option.value),
+      dates: formatDates(values),
+      time: form['event-time'].value,
+    };
+    try {
+      const response = await axios.post('http://localhost:4000/api/events', eventData);
+      if (response.status === 201) {
+        setEventFormCompleted(true);  // Update volunteer form status
+        navigate('/volunteer-dashboard');
+      } else {
+        console.error('Error submitting form');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    }
+
+  };
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Event Management Form</h2>
-          <form>
+          <form onSubmit={handleSubmit}>
 
             <div className='flex flex-col items-center'>
 
@@ -210,7 +251,7 @@ function EventForm() {
                   value={values}
                   onChange={setValues}
                   className='p-5'
-                  // inputClass='w-[50%] bg-white boder-2 border-black-700'
+                // inputClass='w-[50%] bg-white boder-2 border-black-700'
                 />
                 <input
                   type="time"
