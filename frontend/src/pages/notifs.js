@@ -1,9 +1,23 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './notifs.css'; // Import the CSS file
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Import axios
 
 const Notifications = () => {
+  const [notifications, setNotifications] = useState([]); // State to store notifications
   const navigate = useNavigate();
+
+  // Fetch notifications from an API when the component mounts
+  useEffect(() => {
+    axios.get('/api/notifications') // Assuming you have an API endpoint for notifications
+      .then(response => {
+        setNotifications(response.data); // Update state with fetched notifications
+      })
+      .catch(error => {
+        console.error('Error fetching notifications:', error);
+      });
+  }, []); // Empty array means this will run once when the component mounts
+
   return (
     <div className="updates-container">
       {/* Header Section */}
@@ -13,38 +27,25 @@ const Notifications = () => {
         <button onClick={() => navigate('/volunteer-dashboard')} className="close-button">✖</button>
       </div>
 
-      {/* Update Card */}
-      <div className="update-card">
-        <div className="update-header">
-          <p className="update-title">new event matches for you!!</p>
-          <span className="update-date">Sept 20, 2024 4:44pm</span>
-        </div>
-        <p className="update-message">
-          hey name! we have some upcoming events you have been matched to! Please confirm your attendance
-        </p>
-      </div>
-      {/* Update Card */}
-      <div className="update-card">
-        <div className="update-header">
-          <p className="update-title">new event matches for you!!</p>
-          <span className="update-date">Sept 20, 2024 4:44pm</span>
-        </div>
-        <p className="update-message">
-          hey name! we have some upcoming events you have been matched to! Please confirm your attendance
-        </p>
-      </div>
-      {/* Update Card */}
-      <div className="update-card">
-        <div className="update-header">
-          <p className="update-title">new event matches for you!!</p>
-          <span className="update-date">Sept 20, 2024 4:44pm</span>
-        </div>
-        <p className="update-message">
-          hey name! we have some upcoming events you have been matched to! Please confirm your attendance
-        </p>
-      </div>
+      {/* Render fetched notifications */}
+      {notifications.length > 0 ? (
+        notifications.map((notification, index) => (
+          <div className="update-card" key={index}>
+            <div className="update-header">
+              <p className="update-title">{notification.title}</p>
+              <span className="update-date">{notification.date}</span>
+            </div>
+            <p className="update-message">
+              {notification.message}
+            </p>
+          </div>
+        ))
+      ) : (
+        <p>No notifications available</p>
+      )}
     </div>
   );
 };
 
 export default Notifications;
+
