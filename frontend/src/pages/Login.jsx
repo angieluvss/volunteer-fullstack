@@ -1,9 +1,25 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:4000/api/auth/login', formData);
+      setToken(response.data.token); // Assuming the backend responds with a token
+      navigate('/volunteer-dashboard'); // Redirect after login
+    } catch (error) {
+      console.error('Error logging in:', error);
+    }
+  };
 
     return (
         <section className='min-h-screen pt-16 flex items-center justify-center font-[Inter] text-lava_black bg-gradient-to-br from-light_pink to-medium_pink'>
