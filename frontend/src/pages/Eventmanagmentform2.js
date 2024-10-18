@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import DatePicker from 'react-multi-date-picker';
 import Select from 'react-select';
-import axios from 'axios'; // Import axios to send HTTP requests
+import axios from 'axios';
 
 function EventForm() {
+  const navigate = useNavigate(); // Initialize useNavigate
   const today = new Date();
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -43,26 +45,23 @@ function EventForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
-    // Format the date
-    const formattedDates = values.map(date => new Date(date).toISOString());
-  
-    const dataToSubmit = {
+
+    const formattedDates = values.map((date) => new Date(date).toISOString());
+
+    const eventDetails = {
       name: eventData.eventName,
       description: eventData.eventDescription,
       location: `${eventData.address1}, ${eventData.city}, ${eventData.state} ${eventData.zipcode}`,
-      requiredSkills: selectedOptions.map(option => option.label),
+      requiredSkills: selectedOptions.map((option) => option.label),
       urgency: eventData.urgency,
       date: formattedDates,
       time: eventData.time,
     };
-  
-    // Log the data before submitting
-    console.log('Submitting the following data:', dataToSubmit);
-  
+
     try {
-      const response = await axios.post('http://localhost:4000/api/events', dataToSubmit);
-      console.log('Event successfully created', response.data);
+      await axios.post('http://localhost:4000/api/events', eventDetails);
+      // After successful submission, navigate to admin dashboard
+      navigate('/admin-dashboard');
     } catch (error) {
       console.error('Error creating event', error.response.data);
     }
