@@ -1,3 +1,4 @@
+//frontend\src\pages\VolunteerDashboard.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, Button, Modal, Box, Typography, Tabs, Tab, Card, CardContent, Grid } from '@mui/material';
@@ -23,18 +24,22 @@ const VolunteerDashboard = () => {
 
     // Use useEffect to fetch events from the backend when the component loads
     useEffect(() => {
-        axios.get('http://localhost:4000/api/volunteer-dashboard')
-            .then((response) => {
-                // Add base URL for images to ensure they load correctly
-                const eventsWithImages = response.data.map(event => ({
-                    ...event,
-                    image: `http://localhost:4000${event.image}`,
-                }));
-                setRsvpEvents(eventsWithImages); // Update the state with the data from the backend
-            })
-            .catch((error) => {
-                console.error("There was an error fetching the events!", error);
-            });
+        const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+        axios.get('http://localhost:4000/api/volunteer-dashboard', {
+            headers: {
+                Authorization: `Bearer ${token}` // Pass the token in the Authorization header
+            }
+        })
+        .then((response) => {
+            const eventsWithImages = response.data.map(event => ({
+                ...event,
+                image: `http://localhost:4000${event.image}`,
+            }));
+            setRsvpEvents(eventsWithImages); // Update state with backend data
+        })
+        .catch((error) => {
+            console.error("There was an error fetching the events!", error);
+        });
     }, []); // Empty dependency array ensures this runs once when component mounts
 
     // Sort events by urgency (high > medium > low)
@@ -59,17 +64,18 @@ const VolunteerDashboard = () => {
             setRsvpEvents(updatedRSVPEvents);
     
             // Update status on the backend
-            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }) // Use the appropriate endpoint
-                .then(response => {
-                    console.log('Event status updated successfully:', response.data);
-                })
-                .catch(error => {
-                    console.error('Error updating the event status:', error);
-                });
-    
-            if (value === 'confirmed') {
-                setScheduledEvents([...scheduledEvents, { ...updatedEvent, status: 'confirmed' }]);
-            }
+            const token = localStorage.getItem('token');
+            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }, {
+                headers: {
+                    Authorization: `Bearer ${token}` // Pass the token in the Authorization header
+                }
+            })
+            .then(response => {
+                console.log('Event status updated successfully:', response.data);
+            })
+            .catch(error => {
+                console.error('Error updating the event status:', error);
+            });
         }
     };
     

@@ -74,6 +74,7 @@ function Volunteermanagmentform() {
     });
   };
 
+  // Update the handleSubmit function in Volunteermanagmentform2.js
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -109,7 +110,6 @@ function Volunteermanagmentform() {
 
       if (response.ok) {
         setSubmitStatus("success");
-        // Reset form
         setFormData({
           firstName: "",
           lastName: "",
@@ -134,6 +134,7 @@ function Volunteermanagmentform() {
       setIsSubmitting(false);
     }
   };
+
 
   return (
     <>
