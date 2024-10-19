@@ -1,3 +1,4 @@
+//frontend\src\App.js
 import React, { useState } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme'; // Import the theme

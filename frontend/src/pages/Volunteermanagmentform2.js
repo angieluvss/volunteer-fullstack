@@ -1,17 +1,25 @@
+//frontend\src\pages\Volunteermanagmentform2.js
 import React, { useState, useEffect } from "react";
 import Select from "react-select";
 import DatePicker from "react-multi-date-picker";
 import { jwtDecode } from 'jwt-decode'; // Updated import
 
+// Define today and tomorrow before the component
+const today = new Date();
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+
 function Volunteermanagmentform() {
   // Token should be stored in localStorage after login/register
   const token = localStorage.getItem('token');
-  const decodedToken = token ? jwtDecode(token) : null; // Using jwtDecode instead of jwt_decode
-  const userId = decodedToken ? decodedToken.userId : null; // Extract the userId from the decoded token
+  const decodedToken = token ? jwtDecode(token) : null; 
 
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  console.log("Decoded Token:", decodedToken); // Check if userId is in the token
+
+  const userId = decodedToken ? decodedToken.userId : null; // Extract userId
+  if (!userId) {
+    console.error('User ID not found in token');
+  }
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -90,7 +98,7 @@ function Volunteermanagmentform() {
     };
 
     try {
-      const response = await fetch(`http://localhost:3030/api/users/${userId}`, {
+      const response = await fetch(`http://localhost:4000/api/users/${userId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -112,7 +120,7 @@ function Volunteermanagmentform() {
           zipcode: "",
           preferences: "",
           skills: [],
-          dates: [today, tomorrow],
+          dates: [today, tomorrow], // Reset with today and tomorrow
           time: "",
         });
         setSelectedOptions([]);
@@ -126,6 +134,7 @@ function Volunteermanagmentform() {
       setIsSubmitting(false);
     }
   };
+
   return (
     <>
 

@@ -1,7 +1,8 @@
+//frontend\src\pages\Login.jsx
 import axios from 'axios';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';  // Named import
+import { jwtDecode } from 'jwt-decode';  // Named import for jwtDecode
 
 const Login = ({ setToken }) => {
   const navigate = useNavigate();
@@ -15,28 +16,34 @@ const Login = ({ setToken }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Send a POST request to the backend with the login form data
       const response = await axios.post('http://localhost:4000/api/auth/login', formData);
+  
+      // Extract the token from the response
       const token = response.data.token;
   
-      // Decode the token to get the role
-      const decodedToken = jwtDecode(token);
-      const role = decodedToken.role;
+      // Decode the token to get the role and other information
+      const decodedToken = jwtDecode(token); // Correct usage
+      const role = decodedToken.role;  // Extract the role from the decoded token
   
-      // Store the token
+      // Store the token in localStorage and pass it to the app-level state
       setToken(token);
       localStorage.setItem('token', token);
   
-      // Redirect based on role
+      // Redirect based on the user's role
       if (role === 'admin') {
         navigate('/admin-dashboard');
       } else {
         navigate('/volunteer-dashboard');
       }
+  
     } catch (error) {
+      // Handle login errors (e.g., wrong credentials)
       setErrorMessage('Invalid email or password');
       console.error('Error logging in:', error);
     }
   };
+
   
 
   return (

@@ -1,3 +1,4 @@
+//frontend\src\pages\AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 import NavBar from '../components/NavBar'; // Ensure the path is correct
 import { useNavigate } from 'react-router-dom';

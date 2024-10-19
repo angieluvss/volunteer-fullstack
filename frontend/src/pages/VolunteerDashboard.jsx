@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Selec
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './VolunteerDashboard.css'; // Custom CSS for additional styling
+import { assets } from '../assets/assets';
 import { CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon, BellIcon } from '@heroicons/react/24/solid';
 import axios from 'axios';
 
@@ -12,6 +13,7 @@ const VolunteerDashboard = () => {
 
     // State to hold RSVP events for the volunteer
     const [rsvpEvents, setRsvpEvents] = useState([]);
+
     const [openModal, setOpenModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
@@ -19,21 +21,21 @@ const VolunteerDashboard = () => {
     const [tabIndex, setTabIndex] = useState(0);
     const [availabilityDates, setAvailabilityDates] = useState([]);
 
-    // Fetch events from the backend when the component loads
+    // Use useEffect to fetch events from the backend when the component loads
     useEffect(() => {
         axios.get('http://localhost:4000/api/volunteer-dashboard')
             .then((response) => {
-                // Ensure events have an image URL or set a default
+                // Add base URL for images to ensure they load correctly
                 const eventsWithImages = response.data.map(event => ({
                     ...event,
-                    image: event.image ? `http://localhost:4000${event.image}` : 'path/to/default-image.jpg', // Default image if not present
+                    image: `http://localhost:4000${event.image}`,
                 }));
-                setRsvpEvents(eventsWithImages); // Update state with backend data
+                setRsvpEvents(eventsWithImages); // Update the state with the data from the backend
             })
             .catch((error) => {
-                console.error("Error fetching events:", error);
+                console.error("There was an error fetching the events!", error);
             });
-    }, []);
+    }, []); // Empty dependency array ensures this runs once when component mounts
 
     // Sort events by urgency (high > medium > low)
     const sortedEvents = [...rsvpEvents].sort((a, b) => {
@@ -44,7 +46,7 @@ const VolunteerDashboard = () => {
     // Handle RSVP change
     const handleRSVPChange = (id, value) => {
         const updatedEvent = rsvpEvents.find(event => event.id === id);
-
+    
         if (value === 'rejected') {
             setSelectedEvent(updatedEvent);
             setRejectConfirmationOpen(true);
@@ -53,23 +55,25 @@ const VolunteerDashboard = () => {
             const updatedRSVPEvents = rsvpEvents.map(event => 
                 event.id === id ? { ...event, status: value } : event
             );
+    
             setRsvpEvents(updatedRSVPEvents);
-
+    
             // Update status on the backend
-            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value })
+            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }) // Use the appropriate endpoint
                 .then(response => {
                     console.log('Event status updated successfully:', response.data);
                 })
                 .catch(error => {
                     console.error('Error updating the event status:', error);
                 });
-
+    
             if (value === 'confirmed') {
                 setScheduledEvents([...scheduledEvents, { ...updatedEvent, status: 'confirmed' }]);
             }
         }
     };
-
+    
+    
     // Handle open/close modal
     const handleOpenModal = (event) => {
         setSelectedEvent(event);
@@ -87,6 +91,7 @@ const VolunteerDashboard = () => {
 
     const handleDateChange = (date) => {
         setAvailabilityDates((prevDates) => {
+            // Toggle the date in the availabilityDates array
             if (prevDates.some((d) => d.toDateString() === date.toDateString())) {
                 return prevDates.filter((d) => d.toDateString() !== date.toDateString());
             } else {
@@ -94,13 +99,13 @@ const VolunteerDashboard = () => {
             }
         });
     };
-
+    
     const removeDate = (dateToRemove) => {
         setAvailabilityDates((prevDates) =>
             prevDates.filter((date) => date.toDateString() !== dateToRemove.toDateString())
         );
     };
-
+    
     return (
         <section className='snap-start min-h-screen flex pt-28 justify-center font-medium font-[Inter] bg-snow'>
             <div className='flex flex-col w-3/4 gap-8'>
@@ -110,10 +115,8 @@ const VolunteerDashboard = () => {
                         <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
                             Hello [Volunteer Name]
                         </h1>
-                        <button className="edit-profile-button mt-2 text-sm text-gray-500 hover:underline"
-                                onClick={() => navigate('/volunteermanagmentform')}
-                                >
-                                edit profile
+                        <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
+                            edit profile
                         </button>
                         <button onClick={() => navigate('/volunteer-history')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
                             view event history
@@ -123,7 +126,7 @@ const VolunteerDashboard = () => {
                         <BellIcon className='h-8 w-8 text-dark_gray cursor-pointer hover:text-shasta_red transition-colors duration-200' />
                     </button>
                 </div>
-
+                
                 {/* RSVP Waiting Section */}
                 <div>
                     <div className='py-5 px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl'>
@@ -134,47 +137,47 @@ const VolunteerDashboard = () => {
                             <TableContainer className="rsvp-table" sx={{ margin: 0, overflowX: 'auto' }}>
                                 <Table sx={{ borderCollapse: 'collapse', minWidth: '1000px', tableLayout: 'fixed' }}>
                                     <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ width: '37%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Name</strong></TableCell>
-                                            <TableCell sx={{ width: '17%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Description</strong></TableCell>
-                                            <TableCell sx={{ width: '20%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Date</strong></TableCell>
-                                            <TableCell sx={{ width: '26%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>RSVP</strong></TableCell>
-                                        </TableRow>
+                                    <TableRow>
+                                        <TableCell sx={{ width: '37%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Name</strong></TableCell>
+                                        <TableCell sx={{ width: '17%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Description</strong></TableCell>
+                                        <TableCell sx={{ width: '20%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>Event Date</strong></TableCell>
+                                        <TableCell sx={{ width: '26%', fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px', fontWeight: 'bold', textAlign: 'left' }}><strong>RSVP</strong></TableCell>
+                                    </TableRow>
                                     </TableHead>
                                     <TableBody>
-                                        {sortedEvents.map((event) => (
-                                            <TableRow key={event.id}>
-                                                <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{event.name}</TableCell>
-                                                <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
-                                                    <Button
-                                                        variant="text"
-                                                        onClick={() => handleOpenModal(event)}
-                                                        sx={{
-                                                            backgroundColor: '#ffbbc3',
-                                                            color: '#352F36',
-                                                            '&:hover': {
-                                                                backgroundColor: '#f68181'
-                                                            },
-                                                            textTransform: 'none'
-                                                        }}
+                                    {sortedEvents.map((event) => (
+                                        <TableRow key={event.id}>
+                                            <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{event.name}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
+                                                <Button
+                                                    variant="text"
+                                                    onClick={() => handleOpenModal(event)}
+                                                    sx={{
+                                                        backgroundColor: '#ffbbc3',
+                                                        color: '#352F36',
+                                                        '&:hover': {
+                                                            backgroundColor: '#f68181'
+                                                        },
+                                                        textTransform: 'none'
+                                                    }}
                                                     >
-                                                        View Event Details
-                                                    </Button>
-                                                </TableCell>
-                                                <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</TableCell>
-                                                <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
-                                                    <Select
-                                                        value={event.status}
-                                                        onChange={(e) => handleRSVPChange(event.id, e.target.value)}
-                                                        displayEmpty
-                                                        sx={{ fontFamily: 'Inter', color: 'lava_black', py: 0, width: '100%', height: '40px', minHeight: 'unset' }}
-                                                    >
-                                                        <MenuItem value="confirmed">Confirm Attendance</MenuItem>
-                                                        <MenuItem value="rejected">Reject Attendance</MenuItem>
-                                                    </Select>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
+                                                    View Event Details
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{new Date(event.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</TableCell>
+                                            <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
+                                                <Select
+                                                    value={event.status}
+                                                    onChange={(e) => handleRSVPChange(event.id, e.target.value)}
+                                                    displayEmpty
+                                                    sx={{ fontFamily: 'Inter', color: 'lava_black', py: 0, width: '100%', height: '40px', minHeight: 'unset' }}
+                                                >
+                                                    <MenuItem value="confirmed">Confirm Attendance</MenuItem>
+                                                    <MenuItem value="rejected">Reject Attendance</MenuItem>
+                                                </Select>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                     </TableBody>
                                 </Table>
                             </TableContainer>
@@ -613,3 +616,6 @@ const VolunteerDashboard = () => {
 }
 
 export default VolunteerDashboard;
+
+// Volunteer Dashboard css file
+

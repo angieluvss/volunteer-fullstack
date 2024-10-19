@@ -1,3 +1,4 @@
+//frontend\src\pages\notifs.js
 import React from 'react';
 import './notifs.css'; // Import the CSS file
 import { useNavigate } from 'react-router-dom';
