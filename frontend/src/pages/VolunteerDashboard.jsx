@@ -110,8 +110,10 @@ const VolunteerDashboard = () => {
                         <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
                             Hello [Volunteer Name]
                         </h1>
-                        <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
-                            edit profile
+                        <button className="edit-profile-button mt-2 text-sm text-gray-500 hover:underline"
+                                onClick={() => navigate('/volunteermanagmentform')}
+                                >
+                                edit profile
                         </button>
                         <button onClick={() => navigate('/volunteer-history')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
                             view event history

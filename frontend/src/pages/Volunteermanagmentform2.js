@@ -97,10 +97,11 @@ function Volunteermanagmentform() {
           "Authorization": `Bearer ${token}` // Send the token for authorization
         },
         body: JSON.stringify(dataToSend),
-      });
+      });      
 
       if (response.ok) {
         setSubmitStatus("success");
+        // Reset form
         setFormData({
           firstName: "",
           lastName: "",
@@ -125,7 +126,6 @@ function Volunteermanagmentform() {
       setIsSubmitting(false);
     }
   };
-
   return (
     <>
 
