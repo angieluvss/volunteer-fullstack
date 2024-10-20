@@ -19,36 +19,28 @@ const Register = ({ setToken }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
+  try {
+    const response = await axios.post('http://localhost:4000/api/auth/register', {
+      email: formData.email,
+      password: formData.password,
+      role: 'volunteer',  // Assuming this is a volunteer signup
+    });
 
-    try {
-      const response = await axios.post('http://localhost:4000/api/auth/register', {
-        email: formData.email,
-        password: formData.password,
-        role: isAdmin ? 'admin' : 'volunteer',
-      });
+    // Store the token if returned
+    setToken(response.data.token);
+    
+    // Redirect to profile form to complete their profile
+    navigate('/volunteermanagmentform');
 
-      // Store the token from the backend
-      setToken(response.data.token);
+  } catch (error) {
+    console.error('Error registering:', error);
+    alert(error.response?.data?.message || 'Registration failed');
+  }
+};
 
-      // Navigate based on the role
-      if (isAdmin) {
-        navigate('/verify');  // Admin verification page
-      } else {
-        navigate('/volunteermanagmentform');  // Volunteer management form page
-      }
-
-    } catch (error) {
-      console.error('Error registering:', error);
-      alert(error.response?.data?.message || 'Registration failed');
-    }
-  };
 
   return (
     <section className='min-h-screen pt-16 flex items-center justify-center font-[Inter] text-lava_black bg-gradient-to-br from-light_pink to-medium_pink'>

@@ -21,26 +21,34 @@ const VolunteerDashboard = () => {
     const [scheduledEvents, setScheduledEvents] = useState([]);
     const [tabIndex, setTabIndex] = useState(0);
     const [availabilityDates, setAvailabilityDates] = useState([]);
+    const [volunteerName, setVolunteerName] = useState(''); // Add this line at the top
+
 
     // Use useEffect to fetch events from the backend when the component loads
+    // Inside the useEffect where you're fetching volunteer data
     useEffect(() => {
         const token = localStorage.getItem('token'); // Retrieve the token from localStorage
+    
         axios.get('http://localhost:4000/api/volunteer-dashboard', {
-            headers: {
-                Authorization: `Bearer ${token}` // Pass the token in the Authorization header
-            }
+        headers: {
+            Authorization: `Bearer ${token}`, // Attach token to the request
+        },
         })
         .then((response) => {
-            const eventsWithImages = response.data.map(event => ({
-                ...event,
-                image: `http://localhost:4000${event.image}`,
-            }));
-            setRsvpEvents(eventsWithImages); // Update state with backend data
+        setRsvpEvents(response.data.events); // Update the state with events
+        setVolunteerName(response.data.user.firstName); // Assuming the response contains the user's first name
         })
         .catch((error) => {
-            console.error("There was an error fetching the events!", error);
+        console.error("There was an error fetching the events!", error);
         });
     }, []); // Empty dependency array ensures this runs once when component mounts
+    
+    // Render the volunteer name in the JSX
+        <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
+        Hello {volunteerName || 'Volunteer'}
+        </h1>
+
+
 
     // Sort events by urgency (high > medium > low)
     const sortedEvents = [...rsvpEvents].sort((a, b) => {
@@ -119,9 +127,9 @@ const VolunteerDashboard = () => {
                 <div className='header-container flex items-center justify-between flex-col md:flex-row gap-4 md:gap-0'>
                     <div className='flex flex-col items-center md:items-start'>
                         <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
-                            Hello [Volunteer Name]
+                        Hello {volunteerName || 'Volunteer'}
                         </h1>
-                        <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
+                        <button onClick={() => navigate('/volunteermanagmentform')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
                             edit profile
                         </button>
                         <button onClick={() => navigate('/volunteer-history')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
