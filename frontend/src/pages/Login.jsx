@@ -3,45 +3,33 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const Login = ({ setToken }) => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+  const [email, setEmail] = useState(''); // Directly using email state
+  const [password, setPassword] = useState(''); // Directly using password state
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/api/auth/login', {
-        email: formData.email,
-        password: formData.password
-      });
-  
-      const { token, role } = response.data;
-  
+      const res = await axios.post('http://localhost:4000/api/auth/login', { email, password });
+      const { token, role } = res.data;
+
+      // Store the token in localStorage
       localStorage.setItem('token', token);
+      
+      // Set the token in the app state
       setToken(token);
-  
+
+      // Redirect based on role (admin or volunteer)
       if (role === 'admin') {
         navigate('/admin-dashboard');
       } else {
         navigate('/volunteer-dashboard');
       }
     } catch (err) {
-      setError(err.response?.data?.msg || 'Invalid email or password');
+      setError('Invalid credentials');
     }
   };
-  
 
   return (
     <section className='min-h-screen pt-16 flex items-center justify-center font-[Inter] text-lava_black bg-gradient-to-br from-light_pink to-medium_pink'>
@@ -59,8 +47,8 @@ const Login = ({ setToken }) => {
               type="email"
               placeholder="Email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email} // Use email state directly
+              onChange={(e) => setEmail(e.target.value)} // Handle email change directly
               className='m-2 bg-light_gray py-2 px-4 rounded-xl'
               required
             />
@@ -68,8 +56,8 @@ const Login = ({ setToken }) => {
               type="password"
               placeholder="Password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password} // Use password state directly
+              onChange={(e) => setPassword(e.target.value)} // Handle password change directly
               className='m-2 bg-light_gray py-2 px-4 rounded-xl'
               required
             />

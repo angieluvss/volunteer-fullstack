@@ -1,29 +1,43 @@
-import React, { useState, useEffect } from 'react';
+//frontend\src\pages\AdminDashboard.js
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import NavBar from '../components/NavBar'; // Ensure the path is correct
 import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard = ({ token, setToken }) => {
-  const navigate = useNavigate();
-  const [events, setEvents] = useState([]);  // State to hold fetched events
+const AdminDashboard = () => {
+  const [events, setEvents] = useState([]);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
-  // Fetch events when the component mounts
   useEffect(() => {
     const fetchEvents = async () => {
-      try {
-        const response = await axios.get('http://localhost:4000/api/events', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setEvents(response.data);  // Set the events in state
-      } catch (err) {
-        console.error("Error fetching events:", err);
-        setError('Failed to fetch events');
+      const token = localStorage.getItem('token');
+
+      if (token) {
+        try {
+          // Make the request to the backend with the token
+          const response = await axios.get('http://localhost:4000/api/events', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          setEvents(response.data);
+        } catch (err) {
+          // If the token is invalid or expired, the backend will return an error
+          if (err.response && err.response.status === 401) {
+            // Token is invalid or expired, redirect to login
+            localStorage.removeItem('token');
+            navigate('/login');
+          } else {
+            setError('Failed to fetch events');
+          }
+        }
+      } else {
+        // No token, redirect to login
+        setError('No token found, please login again.');
+        navigate('/login');
       }
     };
 
     fetchEvents();
-  }, [token]);
+  }, [navigate]);
 
   return (
     <section className="min-h-screen bg-white">

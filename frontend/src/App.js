@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import theme from './theme'; // Import the theme
+import theme from './theme'; 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -14,31 +14,21 @@ import Volunteermanagmentform from './pages/Volunteermanagmentform2';
 import EventForm from './pages/Eventmanagmentform2';
 import Notifications from './pages/notifs';
 import Verification from './pages/Verification';
-import { jwtDecode } from 'jwt-decode';  // Named import for jwt-decode
-
 
 function App() {
-  const [token, setToken] = useState(null); // Holds user token for authentication
-  const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(false); // Track volunteer form completion
-  const [adminSetupCompleted, setAdminSetupCompleted] = useState(false); // Track admin initial setup completion
+  const [token, setToken] = useState(localStorage.getItem('token')); // Holds user token for authentication
+  const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(false);
+  const [adminSetupCompleted, setAdminSetupCompleted] = useState(false);
 
-  // Check token expiration and remove it if expired
+  // Handle token updates (e.g., after login or logout)
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
     if (storedToken) {
-      const decodedToken = jwtDecode(storedToken); // Decode the token
-      const currentTime = Date.now() / 1000; // Get current time in seconds
-      
-      if (decodedToken.exp < currentTime) {
-        // If the token has expired, clear it and redirect to login
-        localStorage.removeItem('token');
-        setToken(null);
-      } else {
-        // If the token is valid, set it in the state
-        setToken(storedToken);
-      }
+      setToken(storedToken);
+    } else {
+      setToken(null); // Clear token if not found
     }
-  }, []); // Runs once on component mount
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -56,7 +46,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login setToken={setToken} />} />
           <Route path="/register" element={<Register setToken={setToken} />} />
-          
+
           {/* Protected Routes */}
           <Route 
             path="/admin-dashboard" 
@@ -69,8 +59,8 @@ function App() {
 
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
           <Route path="/volcards" element={<VolunteerMatchingForm />} />
-          <Route path="/volunteermanagmentform" element={ <Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted} /> } />
-          <Route path="/eventmanagmentform" element={ <EventForm setAdminSetupCompleted={setAdminSetupCompleted} /> } />
+          <Route path="/volunteermanagmentform" element={ <Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted} />} />
+          <Route path="/eventmanagmentform" element={ <EventForm setAdminSetupCompleted={setAdminSetupCompleted} />} />
           <Route path="/notifs" element={<Notifications />} />
           <Route path="/verify" element={<Verification setAdminSetupCompleted={setAdminSetupCompleted} />} />
         </Routes>
