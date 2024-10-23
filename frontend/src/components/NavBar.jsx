@@ -4,7 +4,7 @@ import { Bars3BottomRightIcon, DocumentChartBarIcon, XMarkIcon } from '@heroicon
 import { assets } from '../assets/assets';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, setVolunteerFormCompleted, setAdminSetupCompleted }) => {
+const NavBar = ({ token, role, setToken, setRole, volunteerFormCompleted, adminSetupCompleted, setVolunteerFormCompleted, setAdminSetupCompleted }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -19,9 +19,8 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
     const scrollToSection = (section) => {
         console.log(`Scrolling to: ${section}`);
         setIsScrolling(true);
-        scroller.scrollTo(section, {
-            containerId: 'scroll-container',
-        });
+        scroller.scrollTo(section, { 
+            containerId: 'scroll-container' });
         setTimeout(() => {
             setIsScrolling(false);
             setActiveSection(section);
@@ -59,10 +58,8 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
     // Handle manual scroll events and update active section
     const handleScroll = () => {
         if (isScrolling) return;
-
         const sections = document.querySelectorAll('.snap-start');
         let foundActiveSection = false;
-
         sections.forEach((section, index) => {
             const rect = section.getBoundingClientRect();
             if (rect.top >= 0 && rect.top <= window.innerHeight / 2 && !foundActiveSection) {
@@ -80,14 +77,12 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
         if (scrollContainer) {
             scrollContainer.addEventListener('scroll', handleScroll);
         }
-
         return () => {
             if (scrollContainer) {
                 scrollContainer.removeEventListener('scroll', handleScroll);
             }
         };
     }, [isScrolling]);
-
 
     return (
         <nav className='bg-snow border border-light_gray fixed w-full z-50'>
@@ -113,27 +108,45 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
                     <div className='flex flex-col md:flex-row md:gap-3'> 
                         { token ? (
                             <>
+                                {/* Dashboard Button */}
                                 {
-                                    token.role === 'admin' && adminSetupCompleted && (
+                                    role === 'admin' && adminSetupCompleted && (
                                         <button onClick={() => navigate('/admin-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/admin-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Admin Dashboard</button>
                                     )
                                 }
                                 {
-                                    token.role === 'volunteer' && volunteerFormCompleted && (
+                                    role === 'volunteer' && volunteerFormCompleted && (
                                         <button onClick={() => navigate('/volunteer-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteer-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Volunteer Dashboard</button>
                                     )
                                 }
+                                {/* Go to Dashboard Button */}
                                 <div className='mb-6 mx-6 md:m-0'>
-                                <button 
-                                    onClick={() => { 
-                                        setToken(null); // Set token to null to log out
-                                        setVolunteerFormCompleted(false); // Reset volunteer form completion status
-                                        setAdminSetupCompleted(false); // Reset admin setup completion status
-                                        navigate('/'); // Redirect to home page
-                                    }} 
-                                    className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'
-                                    >
-                                    Log Out
+                                    <button
+                                        onClick={() => {
+                                            if (role === 'admin') {
+                                                navigate('/admin-dashboard');
+                                            } else if (role === 'volunteer') {
+                                                navigate('/volunteer-dashboard');
+                                            }
+                                        }}
+                                        className='btn static font-medium text-2xl md:text-base font-[Inter] text-lava_black bg-light_gray py-2 px-4 rounded-2xl hover:bg-shasta_red hover:text-snow'>
+                                        Go to Dashboard
+                                    </button>
+                                </div>
+                                {/* Log Out Button */}
+                                <div className='mb-6 mx-6 md:m-0'>
+                                    <button 
+                                        onClick={() => { 
+                                            setToken(null); // Set token to null to log out
+                                            setRole(null);  // Clear the role on logout
+                                            setVolunteerFormCompleted(false);
+                                            setAdminSetupCompleted(false);
+                                            localStorage.removeItem('token'); // Clear the token from localStorage
+                                            localStorage.removeItem('role');  // Clear the role from localStorage
+                                            navigate('/'); // Redirect to home page
+                                        }} 
+                                        className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>
+                                        Log Out
                                     </button>
                                 </div>
                             </>

@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-const Login = ({ setToken }) => {
-  const [email, setEmail] = useState(''); // Directly using email state
-  const [password, setPassword] = useState(''); // Directly using password state
+const Login = ({ setToken, setRole }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -14,16 +14,18 @@ const Login = ({ setToken }) => {
       const res = await axios.post('http://localhost:4000/api/auth/login', { email, password });
       const { token, role } = res.data;
 
-      // Store the token in localStorage
+      // Store the token and role in localStorage
       localStorage.setItem('token', token);
-      
-      // Set the token in the app state
+      localStorage.setItem('role', role);
+
+      // Set the token and role in the app state
       setToken(token);
+      setRole(role);
 
       // Redirect based on role (admin or volunteer)
       if (role === 'admin') {
         navigate('/admin-dashboard');
-      } else {
+      } else if (role === 'volunteer') {
         navigate('/volunteer-dashboard');
       }
     } catch (err) {
