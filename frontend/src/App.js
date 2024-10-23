@@ -69,7 +69,7 @@ function App() {
           />
           <Route
             path="/volunteermanagmentform"
-            element={token ? <Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted} /> : <Navigate to="/login" />}
+            element={token && role === 'volunteer' ? <VolunteerDashboard /> : <Navigate to="/login" />}
           />
 
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
