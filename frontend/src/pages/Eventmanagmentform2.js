@@ -1,94 +1,110 @@
-
-import React from 'react';
-import { useState } from "react";
-// import NavBar from '../components/NavigationBar';
+//frontend\src\pages\Eventmanagmentform2.js
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import DatePicker from "react-multi-date-picker";
+import axios from 'axios';
+//import DatePicker from "react-multi-date-picker";
+import DatePicker from 'react-datepicker';  // Import the new DatePicker
+import 'react-datepicker/dist/react-datepicker.css';  // Import the DatePicker styles
 import Select from 'react-select';
 import axios from 'axios';
 
-function EventForm({ setEventFormCompleted }) {
+const EventForm = () => {
   const navigate = useNavigate();
-  const today = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    address1: '',
+    address2: '',
+    city: '',
+    state: '',
+    zipcode: '',
+    date: '',
+    time: '',
+    skillsRequired: [],
+    urgency: ''
+  });
+  const [error, setError] = useState('');
+  const token = localStorage.getItem('token'); // Assuming the admin is authenticated with JWT
 
-  const [values, setValues] = useState([today, tomorrow]);
-  const [selectedOptions, setSelectedOptions] = useState([]);
-  const handleChange = (selectedOption) => {
-    setSelectedOptions(selectedOption);
+  // Skill options for the event
+  const skillOptions = [
+    { value: 'Communication', label: 'Communication' },
+    { value: 'Writing', label: 'Writing' },
+    { value: 'Public Speaking', label: 'Public Speaking' },
+    { value: 'Programming', label: 'Programming' },
+  ];
+
+  // Handle input changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
   };
 
+  // Handle skills select change
+  const handleSkillChange = (selectedOptions) => {
+    setFormData({
+      ...formData,
+      skillsRequired: selectedOptions.map(option => option.value)
+    });
+  };
 
-  const skillOptions = [
-    { value: 'skill1', label: 'Communication' },
-    { value: 'skill2', label: 'Wriitng' },
-    { value: 'skill3', label: 'Public Speaking' },
-    { value: 'skill4', label: 'Programming' },
-
-  ];
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const form = e.target;
-
-    const formatDates = (dates) => {
-      return dates.map(timestamp => {
-        const date = new Date(timestamp);
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      });
-    };
-
-    const eventData = {
-      eventName: form['event-name'].value,
-      eventDescription: form['event-description'].value,
-      address1: form['address1'].value,
-      address2: form['address2'].value,
-      city: form['city'].value,
-      state: form['state'].value,
-      zipcode: form['zipcode'].value,
-      urgency: form['urgency'].value,
-      skills: selectedOptions.map((option) => option.value),
-      dates: formatDates(values),
-
-    };
-
-    console.log("Event Data:", eventData);  // Debugging statement
-
+  
+    // Log the date for debugging
+    console.log("Selected Date:", formData.date);
+  
+    // Try to convert the date into a valid Date object
+    const selectedDate = new Date(formData.date);
+  
+    if (isNaN(selectedDate.getTime())) {
+      setError('Invalid date selected');
+      return;
+    }
+  
+    // Format the date to ISO string
+    const formattedDate = selectedDate.toISOString();
+  
     try {
-      //const response = await axios.post('http://localhost:4000/api/events', eventData); //g: 10/16
-      const response = await axios.post('http://localhost:4000/api/events/create', eventData);
-
-
-      if (response.status === 201) {
-        setEventFormCompleted(true);
-        navigate('/volunteer-dashboard');
-      } else {
-        console.error('Error submitting form');
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
+      await axios.post(
+        'http://localhost:4000/api/events/create',
+        {
+          ...formData,
+          date: formData.date ? formData.date.toISOString() : '',  // Format date before submission
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      navigate('/admin-dashboard');  // Redirect to admin dashboard after event creation
+    } catch (err) {
+      console.error("Error during event creation:", err.response?.data);  // Log detailed error message
+      setError('Failed to create event');
     }
   };
-
+  
+  
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
         <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
           <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">Event Management Form</h2>
+          {error && <p className="text-red-500">{error}</p>}
           <form onSubmit={handleSubmit}>
 
             <div className='flex flex-col items-center'>
 
               {/* Event Name */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-name" className="block mb-2 font-bold">Event Name *</label>
+                <label htmlFor="name" className="block mb-2 font-bold">Event Name *</label>
                 <input
                   type="text"
-                  id="event-name"
-                  name="event-name"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   placeholder="Enter event name here *"
                   maxLength={100}
                   required
@@ -98,10 +114,12 @@ function EventForm({ setEventFormCompleted }) {
 
               {/* Event Description */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="event-description" className="block mb-2 font-bold">Event Description *</label>
+                <label htmlFor="description" className="block mb-2 font-bold">Event Description *</label>
                 <textarea
-                  id="event-description"
-                  name="event-description"
+                  id="description"
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
                   rows="5"
                   placeholder="Enter event description here *"
                   required
@@ -118,6 +136,8 @@ function EventForm({ setEventFormCompleted }) {
                   type="text"
                   id="address1"
                   name="address1"
+                  value={formData.address1}
+                  onChange={handleChange}
                   placeholder="Address 1 *"
                   maxLength={100}
                   required
@@ -127,15 +147,18 @@ function EventForm({ setEventFormCompleted }) {
                   type="text"
                   id="address2"
                   name="address2"
-                  placeholder="Address 2 "
+                  value={formData.address2}
+                  onChange={handleChange}
+                  placeholder="Address 2"
                   maxLength={100}
-                  //required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
                 <input
                   type="text"
                   id="city"
                   name="city"
+                  value={formData.city}
+                  onChange={handleChange}
                   placeholder="City *"
                   maxLength={100}
                   required
@@ -144,9 +167,13 @@ function EventForm({ setEventFormCompleted }) {
                 <select
                   name="state"
                   id="state"
+                  value={formData.state}
+                  onChange={handleChange}
                   required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 >
+                  <option value="">Select State *</option>
+                  {/* Add state options here */}
                   <option value="">Select State</option>
                   <option value="AL">Alabama</option>
                   <option value="AK">Alaska</option>
@@ -198,11 +225,13 @@ function EventForm({ setEventFormCompleted }) {
                   <option value="WV">West Virginia</option>
                   <option value="WI">Wisconsin</option>
                   <option value="WY">Wyoming</option>
-                </select>
+                   </select>
                 <input
                   type="number"
                   id="zipcode"
                   name="zipcode"
+                  value={formData.zipcode}
+                  onChange={handleChange}
                   placeholder="Zipcode *"
                   minLength={5}
                   maxLength={9}
@@ -216,11 +245,11 @@ function EventForm({ setEventFormCompleted }) {
 
               {/* Required Skills */}
               <div className="mb-4 w-[50%]">
-                <label htmlFor="skills" className="block mb-2 font-bold">Select Required Skills *</label>
+                <label htmlFor="skillsRequired" className="block mb-2 font-bold">Select Required Skills *</label>
                 <Select
                   options={skillOptions}
-                  value={selectedOptions}
-                  onChange={handleChange}
+                  value={skillOptions.filter(option => formData.skillsRequired.includes(option.value))}
+                  onChange={handleSkillChange}
                   isMulti
                 />
               </div>
@@ -231,11 +260,15 @@ function EventForm({ setEventFormCompleted }) {
                 <select
                   name="urgency"
                   id="urgency"
+                  value={formData.urgency}
+                  onChange={handleChange}
+                  required
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 >
-                  <option value="urgency1">Low Priority</option>
-                  <option value="urgency2">Medium Priority</option>
-                  <option value="urgency3">High Priority</option>
+                  <option value="">Select Urgency *</option>
+                  <option value="Low">Low Priority</option>
+                  <option value="Medium">Medium Priority</option>
+                  <option value="High">High Priority</option>
                 </select>
               </div>
             </div>
@@ -244,21 +277,21 @@ function EventForm({ setEventFormCompleted }) {
             <div className="mb-6">
               <label className="block mb-2 font-bold">Availibilty</label>
               <div className="flex flex-col gap-4">
-                {/* <input
-                  type="date"
-                  name="event-date"
-                  id="event-date"
-                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
-                /> */}
+              <DatePicker
+                selected={formData.date} 
+                onChange={(date) => setFormData({ ...formData, date })}  // Update date state on change
+                dateFormat="yyyy/MM/dd"
+                className="w-full px-3 py-2 border rounded-md bg-gray-100"
+              />
 
-                <DatePicker
-                  multiple
-                  value={values}
-                  onChange={setValues}
-                  className='p-5'
-                // inputClass='w-[50%] bg-white boder-2 border-black-700'
+                <input
+                  type="time"
+                  name="time"
+                  id="time"
+                  value={formData.time}
+                  onChange={handleChange}
+                  className="w-[50%] px-5 py-2 border rounded-md text-gray-900 bg-gray-100"
                 />
-
               </div>
             </div>
 
