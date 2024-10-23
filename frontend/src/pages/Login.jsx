@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+
 
 const Login = ({ setToken }) => {
   const [formData, setFormData] = useState({
@@ -27,12 +27,12 @@ const Login = ({ setToken }) => {
         email: formData.email,
         password: formData.password
       });
-  
+
       const { token, role } = response.data;
-  
+
       localStorage.setItem('token', token);
       setToken(token);
-  
+
       if (role === 'admin') {
         navigate('/admin-dashboard');
       } else {
@@ -42,7 +42,7 @@ const Login = ({ setToken }) => {
       setError(err.response?.data?.msg || 'Invalid email or password');
     }
   };
-  
+
 
   return (
     <section className='min-h-screen pt-16 flex items-center justify-center font-[Inter] text-lava_black bg-gradient-to-br from-light_pink to-medium_pink'>
@@ -55,7 +55,7 @@ const Login = ({ setToken }) => {
           {error && <p className="text-red-600 mt-2">{error}</p>}
 
           {/* email/password */}
-          <form onSubmit={handleSubmit} className='my-8 flex flex-col w-2/3 min-w-60 md:min-w-72 max-w-96 text-lg'> 
+          <form onSubmit={handleSubmit} className='my-8 flex flex-col w-2/3 min-w-60 md:min-w-72 max-w-96 text-lg'>
             <input
               type="email"
               placeholder="Email"
