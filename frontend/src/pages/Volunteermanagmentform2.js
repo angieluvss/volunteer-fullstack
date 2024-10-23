@@ -57,13 +57,14 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
       preferences: form['Preferences'].value,
       skills: selectedOptions.map((option) => option.value),
       dates: formatDates(values),
-      time: form['event-time'].value,
+     
     };
 
 
     try {
       // Axios POST request to your backend API
       const response = await axios.post('http://localhost:4000/api/users', formData);
+    
 
 
       if (response.status === 201) {
@@ -245,19 +246,14 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
 
             {/* Date and Time */}
             <div className="mb-6">
-              <label className="block mb-2 font-bold">Date and Time of Event *</label>
+              <label className="block mb-2 font-bold">Availibilty *</label>
               <div className="flex flex-col gap-4">
                 <DatePicker
                   multiple
                   value={values}
                   onChange={setValues}
                 />
-                <input
-                  type="time"
-                  name="event-time"
-                  id="event-time"
-                  className="w-[50%] px-3 py-2 border rounded-md text-gray-900 bg-gray-100"
-                />
+              
               </div>
             </div>
 

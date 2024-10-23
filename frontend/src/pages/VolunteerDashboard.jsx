@@ -57,7 +57,7 @@ const VolunteerDashboard = () => {
             );
     
             setRsvpEvents(updatedRSVPEvents);
-    
+
             // Update status on the backend
             axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }) // Use the appropriate endpoint
                 .then(response => {
