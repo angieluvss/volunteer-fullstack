@@ -22,61 +22,6 @@ const VolunteerDashboard = () => {
             skills: 'Teamwork',
             status: 'waiting',
             image: assets.event1
-        },
-        {
-            id: 2,
-            name: 'Event 2',
-            description: 'Description of event 2',
-            location: 'Location 2',
-            date: '2024-10-27',
-            urgency: 'medium',
-            skills: 'Communication, Adaptability',
-            status: 'waiting',
-            image: assets.event2
-        },
-        {
-            id: 3,
-            name: 'Very long name of event that is exactly 100 characters which is the maximum an event name can be!!!!',
-            description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus orci nisl, semper ut ullamcorper sed, consequat id tellus. Aliquam id justo elit. Sed id ipsum viverra, convallis erat vel, efficitur eros. Etiam semper, sem vitae facilisis cursus, justo mi dictum nibh, eu accumsan felis sapien id orci. Maecenas orci tellus, porta non libero eget, finibus vestibulum ante. Curabitur lobortis et eros at pulvinar. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris sit amet imperdiet tortor. Quisque ut massa ex.',
-            location: 'Location 3',
-            date: '2024-10-13',
-            urgency: 'high',
-            skills: 'Teamwork, Leadership',
-            status: 'waiting',
-            image: assets.event3
-        },
-        {
-            id: 4,
-            name: 'Event 4 that is the name',
-            description: 'Description of event 4',
-            location: 'Location 4',
-            date: '2024-10-17',
-            urgency: 'medium',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event4
-        },
-        {
-            id: 5,
-            name: 'Event 5',
-            description: 'Description of event 5',
-            location: 'Location 5',
-            date: '2024-10-30',
-            urgency: 'high',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event5
-        },
-        {
-            id: 6,
-            name: 'Event 6 that is the name of the event',
-            description: 'Description of event 6',
-            location: 'Location 6',
-            date: '2024-10-17',
-            urgency: 'medium',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event6
         }
     ]);
 
