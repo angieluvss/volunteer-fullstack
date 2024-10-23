@@ -194,6 +194,32 @@ function EventForm() {
               </div>
             </div>
 
+            {/* Date and Time */}
+            <div className="mb-6">
+              <label className="block mb-2 font-bold">Date and Time of Event</label>
+              <div className="flex flex-col gap-4">
+                {/* <input
+                  type="date"
+                  name="event-date"
+                  id="event-date"
+                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                /> */}
+
+                <DatePicker
+                  multiple
+                  value={values}
+                  onChange={setValues}
+                  className='p-5'
+                  // inputClass='w-[50%] bg-white boder-2 border-black-700'
+                />
+                <input
+                  type="time"
+                  name="event-time"
+                  id="event-time"
+                  className="w-[50%] px-5 py-2 border rounded-md text-gray-900 bg-gray-100"
+                />
+              </div>
+            </div>
 
             {/* Submit Button */}
             <button
