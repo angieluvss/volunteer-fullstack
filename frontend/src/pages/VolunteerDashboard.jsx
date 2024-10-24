@@ -20,7 +20,7 @@ const VolunteerDashboard = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
 
-    // Fetch events from backend on component mount
+
 // Fetch events from backend on component mount
 useEffect(() => {
     const fetchEvents = async () => {
@@ -63,63 +63,97 @@ useEffect(() => {
         return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
     });
 
-// Handle RSVP change
-const handleRSVPChange = async (eventId, value) => {
-    console.log("Event ID being sent to register:", eventId);  // Check the eventId
-    
-    if (value === 'confirmed') {
-        // Find the confirmed event in the RSVP list
-        const confirmedEvent = rsvpEvents.find(event => event._id === eventId);
+    // Handle RSVP change
+    const handleRSVPChange = async (eventId, value) => {
+        console.log("Event ID being sent to register:", eventId);  // Check the eventId
         
-        // Check if the confirmedEvent exists before proceeding
-        if (!confirmedEvent) {
-            console.error("Event not found for RSVP:", eventId);
-            return;
-        }
-
-        console.log("Confirmed Event:", confirmedEvent);
-
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                console.error("No token found");
+        if (value === 'confirmed') {
+            // Find the confirmed event in the RSVP list
+            const confirmedEvent = rsvpEvents.find(event => event._id === eventId);
+            
+            // Check if the confirmedEvent exists before proceeding
+            if (!confirmedEvent) {
+                console.error("Event not found for RSVP:", eventId);
                 return;
             }
-            
-            const decodedToken = jwtDecode(token);
-            const volunteerId = decodedToken.userId;
 
-            // Post request to register the volunteer for the event
-            await axios.post('http://localhost:4000/api/events/register', {
-                eventId: confirmedEvent._id,  // Use the '_id' property from the event
-                volunteerId
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            console.log("Confirmed Event:", confirmedEvent);
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error("No token found");
+                    return;
                 }
-            });
+                
+                const decodedToken = jwtDecode(token);
+                const volunteerId = decodedToken.userId;
 
-            // Update the scheduled events and remove the event from RSVP
-            setScheduledEvents(prevScheduledEvents => [...prevScheduledEvents, confirmedEvent]);
-            setRsvpEvents(prevRsvpEvents => prevRsvpEvents.filter(event => event._id !== eventId));
+                // Post request to register the volunteer for the event
+                await axios.post('http://localhost:4000/api/events/register', {
+                    eventId: confirmedEvent._id,  // Use the '_id' property from the event
+                    volunteerId
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
 
+                // Update the scheduled events and remove the event from RSVP
+                setScheduledEvents(prevScheduledEvents => [...prevScheduledEvents, confirmedEvent]);
+                setRsvpEvents(prevRsvpEvents => prevRsvpEvents.filter(event => event._id !== eventId));
+
+            } catch (error) {
+                console.error("Error confirming event:", error);
+            }
+
+        } else if (value === 'rejected') {
+            // Handle event rejection by opening the reject confirmation modal
+            const selected = rsvpEvents.find(event => event._id === eventId);
+            if (selected) {
+                setSelectedEvent(selected);  // Use '_id' here as well
+                setRejectConfirmationOpen(true);
+            } else {
+                console.error("Event not found for rejection:", eventId);
+            }
+        }
+    };
+
+
+    //handle unregistering
+    const handleUnregister = async (eventId) => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            console.error("No token found");
+            return;
+          }
+      
+          const decodedToken = jwtDecode(token);
+          const volunteerId = decodedToken.userId;
+      
+          // Send a request to the backend to unregister the volunteer from the event
+          await axios.post('http://localhost:4000/api/events/unregister', {
+            eventId,
+            volunteerId
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+      
+          // Update the scheduled events by removing the unregistered event
+          setScheduledEvents(prevScheduledEvents => prevScheduledEvents.filter(event => event._id !== eventId));
+      
+          // Optionally, add the event back to the RSVP section so it can be registered for again
+          const unregisteredEvent = scheduledEvents.find(event => event._id === eventId);
+          setRsvpEvents(prevRsvpEvents => [...prevRsvpEvents, unregisteredEvent]);
+      
         } catch (error) {
-            console.error("Error confirming event:", error);
+          console.error("Error unregistering from event:", error);
         }
-
-    } else if (value === 'rejected') {
-        // Handle event rejection by opening the reject confirmation modal
-        const selected = rsvpEvents.find(event => event._id === eventId);
-        if (selected) {
-            setSelectedEvent(selected);  // Use '_id' here as well
-            setRejectConfirmationOpen(true);
-        } else {
-            console.error("Event not found for rejection:", eventId);
-        }
-    }
-};
-
-
+      };
+      
 
     // Handle open/close modal
     const handleOpenModal = (event) => {
@@ -249,24 +283,43 @@ const handleRSVPChange = async (eventId, value) => {
 
                         {/* CALENDAR VIEW */}
                         {tabIndex === 0 && (
-                            <div className='mt-4 w-full'>
-                                <Calendar
-                                    tileContent={({ date, view }) => {
-                                        const events = scheduledEvents.filter(e => new Date(e.date).toDateString() === date.toDateString());
-                                        return events.length > 0 ? (
-                                            <div className='calendar-event-tile-container'>
-                                                {events.map((event, index) => (
-                                                    <Typography key={index} className='calendar-event-text calendar-event-tile' title={event.name}>
-                                                        {event.name}
-                                                    </Typography>
-                                                ))}
-                                            </div>
-                                        ) : null;
-                                    }}
-                                    className='custom-calendar w-full'
-                                />
-                            </div>
+                        <div className='mt-4 w-full'>
+                            <Calendar
+                            tileContent={({ date, view }) => {
+                                const events = scheduledEvents.filter(e => new Date(e.date).toDateString() === date.toDateString());
+                                return events.length > 0 ? (
+                                <div className='calendar-event-tile-container'>
+                                    {events.map((event, index) => (
+                                    <div key={index} className='calendar-event-item'>
+                                        <Typography className='calendar-event-text calendar-event-tile' title={event.name}>
+                                        {event.name}
+                                        </Typography>
+                                        {/* Unregister Button */}
+                                        <Button
+                                        variant="contained"
+                                        onClick={() => handleUnregister(event._id)}  // Call the handleUnregister function
+                                        sx={{
+                                            backgroundColor: '#ff4c4c',
+                                            color: '#fff',
+                                            fontSize: '0.75rem',
+                                            marginTop: '4px',
+                                            '&:hover': {
+                                            backgroundColor: '#ff7a7a',
+                                            },
+                                        }}
+                                        >
+                                        Unregister
+                                        </Button>
+                                    </div>
+                                    ))}
+                                </div>
+                                ) : null;
+                            }}
+                            className='custom-calendar w-full'
+                            />
+                        </div>
                         )}
+
 
                         {/* CARD VIEW */}
                         {tabIndex === 1 && (
