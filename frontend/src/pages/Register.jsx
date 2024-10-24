@@ -118,7 +118,7 @@ const handleSubmit = async (e) => {
               className='m-2 bg-light_gray py-2 px-4 rounded-xl'
               required
             />
-            <button type="submit" className='btn static text-2xl font-bold bg-shasta_red text-snow rounded-2xl py-2 px-8 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Sign Up</button>
+            <button type="submit" className='btn static text-2xl font-bold bg-shasta_red text-snow rounded-2xl py-2 px-8 mx-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Sign Up</button>
           </form>
 
         </div>
