@@ -19,6 +19,7 @@ const VolunteerDashboard = () => {
     const [openModal, setOpenModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
+    const [showUnregisterButton, setShowUnregisterButton] = useState(false); //for the modal of events in calendar view
 
 
 // Fetch events from backend on component mount
@@ -156,11 +157,13 @@ useEffect(() => {
       
 
     // Handle open/close modal
-    const handleOpenModal = (event) => {
+    const handleOpenModal = (event, fromCalendar = false) => {
         setSelectedEvent(event);
         setOpenModal(true);
+        setShowUnregisterButton(fromCalendar); // Set true only for calendar events
         console.log("Event ID being sent to register:", event._id);  // Add this log
     };
+    
 
     const handleCloseModal = () => {
         setOpenModal(false);
@@ -283,41 +286,29 @@ useEffect(() => {
 
                         {/* CALENDAR VIEW */}
                         {tabIndex === 0 && (
-                        <div className='mt-4 w-full'>
-                            <Calendar
-                            tileContent={({ date, view }) => {
-                                const events = scheduledEvents.filter(e => new Date(e.date).toDateString() === date.toDateString());
-                                return events.length > 0 ? (
-                                <div className='calendar-event-tile-container'>
-                                    {events.map((event, index) => (
-                                    <div key={index} className='calendar-event-item'>
-                                        <Typography className='calendar-event-text calendar-event-tile' title={event.name}>
-                                        {event.name}
-                                        </Typography>
-                                        {/* Unregister Button */}
-                                        <Button
-                                        variant="contained"
-                                        onClick={() => handleUnregister(event._id)}  // Call the handleUnregister function
-                                        sx={{
-                                            backgroundColor: '#ff4c4c',
-                                            color: '#fff',
-                                            fontSize: '0.75rem',
-                                            marginTop: '4px',
-                                            '&:hover': {
-                                            backgroundColor: '#ff7a7a',
-                                            },
-                                        }}
-                                        >
-                                        Unregister
-                                        </Button>
-                                    </div>
-                                    ))}
-                                </div>
-                                ) : null;
-                            }}
-                            className='custom-calendar w-full'
-                            />
-                        </div>
+                            <div className='mt-4 w-full'>
+                                <Calendar
+                                    tileContent={({ date, view }) => {
+                                        const events = scheduledEvents.filter(e => new Date(e.date).toDateString() === date.toDateString());
+                                        return events.length > 0 ? (
+                                            <div className='calendar-event-tile-container'>
+                                                {events.map((event, index) => (
+                                                    <Typography
+                                                        key={index}
+                                                        className='calendar-event-text calendar-event-tile'
+                                                        title={event.name}
+                                                        onClick={() => handleOpenModal(event, true)}  // Pass true for calendar view
+                                                        style={{ cursor: 'pointer', color: 'white' }}
+                                                    >
+                                                        {event.name}
+                                                    </Typography>
+                                                ))}
+                                            </div>
+                                        ) : null;
+                                    }}
+                                    className='custom-calendar w-full'
+                                />
+                            </div>
                         )}
 
 
@@ -548,10 +539,10 @@ useEffect(() => {
                     >
                         {selectedEvent && (
                             <div>
-                                {/* Event Image */}
+                                {/* Event Image (optional) */}
                                 <div style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
                                     <img
-                                        src={selectedEvent.image}
+                                        src={selectedEvent.image}  // If your events have images
                                         alt={selectedEvent.name}
                                         style={{
                                             width: '100%',
@@ -578,27 +569,30 @@ useEffect(() => {
                                         {selectedEvent.name}
                                     </Typography>
 
-                                    {/* Event Information with Icons */}
+                                    {/* Date */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <CalendarDateRangeIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
                                             <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                         </Typography>
                                     </Box>
-
+                                    
+                                    {/* Location */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <MapPinIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
-                                            <strong>Location:</strong> {selectedEvent.location}
+                                            <strong>Location:</strong> {selectedEvent.address?.address1}, {selectedEvent.address?.city}, {selectedEvent.address?.state} {selectedEvent.address?.zipcode}
                                         </Typography>
                                     </Box>
 
+
+                                    {/* Skills Required */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <ListBulletIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
                                             <strong>Skills Required:</strong> 
                                             <Box sx={{ display: 'inline-flex', flexWrap: 'wrap', gap: 1, ml: 1 }}>
-                                                {selectedEvent.skills.split(',').map((skill, index) => (
+                                                {selectedEvent.skillsRequired?.map((skill, index) => (
                                                     <span
                                                         key={index}
                                                         style={{
@@ -615,25 +609,7 @@ useEffect(() => {
                                         </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                        <ExclamationCircleIcon className="h-6 w-6 text-gray-500" />
-                                        <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
-                                            <strong>Urgency:</strong> 
-                                            <span
-                                                style={{
-                                                    background: selectedEvent.urgency === 'high' ? '#f8d7da' : selectedEvent.urgency === 'medium' ? '#fff3cd' : '#d4edda',
-                                                    padding: '3px 8px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '0.8rem',
-                                                    marginLeft: '8px',
-                                                    color: '#000',
-                                                }}
-                                            >
-                                                {selectedEvent.urgency}
-                                            </span>
-                                        </Typography>
-                                    </Box>
-
+                                    {/* Event Description */}
                                     <Typography
                                         id="event-details-description"
                                         sx={{
@@ -644,11 +620,31 @@ useEffect(() => {
                                     >
                                         {selectedEvent.description}
                                     </Typography>
+
+                                    {/* Conditionally Render Unregister Button */}
+                                    {showUnregisterButton && (
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => handleUnregister(selectedEvent._id)}
+                                            sx={{
+                                                marginTop: '20px',
+                                                backgroundColor: '#f44336',
+                                                '&:hover': {
+                                                    backgroundColor: '#d32f2f',
+                                                },
+                                            }}
+                                        >
+                                            Unregister from Event
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         )}
                     </Box>
                 </Modal>
+
+
 
                 {/* Confirmation of Rejecting event Modal */}
                 <Modal
