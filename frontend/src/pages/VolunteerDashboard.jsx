@@ -7,7 +7,7 @@ import './VolunteerDashboard.css'; // Custom CSS for additional styling
 import axios from 'axios'; // Adding Axios to fetch data from backend
 import { assets } from '../assets/assets';
 import { CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon, BellIcon } from '@heroicons/react/24/solid';
-import axios from 'axios';
+
 
 const VolunteerDashboard = () => {
     const navigate = useNavigate();

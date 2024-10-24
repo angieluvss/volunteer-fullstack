@@ -6,7 +6,7 @@ import axios from 'axios';
 import DatePicker from 'react-datepicker';  // Import the new DatePicker
 import 'react-datepicker/dist/react-datepicker.css';  // Import the DatePicker styles
 import Select from 'react-select';
-import axios from 'axios';
+
 
 const EventForm = () => {
   const navigate = useNavigate();
