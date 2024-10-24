@@ -1,61 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, Button, Modal, Box, Typography, Tabs, Tab, Card, CardContent, Grid } from '@mui/material';
+import { BellIcon, CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid'; 
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './VolunteerDashboard.css'; // Custom CSS for additional styling
-import { assets } from '../assets/assets';
-import { CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon, BellIcon } from '@heroicons/react/24/solid';
+import { jwtDecode } from 'jwt-decode'; 
+import axios from 'axios';
 
 const VolunteerDashboard = () => {
     const navigate = useNavigate();
 
-    // State to hold RSVP events for the volunteer
-    const [rsvpEvents, setRsvpEvents] = useState([
-        {
-            id: 1,
-            name: 'Event 1',
-            description: 'Description of event 1',
-            location: 'Location 1',
-            date: '2024-10-17',
-            urgency: 'low',
-            skills: 'Teamwork',
-            status: 'waiting',
-            image: assets.event1
-        }
-    ]);
-
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
+    // State to hold RSVP and Scheduled events
+    const [rsvpEvents, setRsvpEvents] = useState([]);
     const [scheduledEvents, setScheduledEvents] = useState([]);
     const [tabIndex, setTabIndex] = useState(0);
     const [availabilityDates, setAvailabilityDates] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
+
+    // Fetch events from backend on component mount
+// Fetch events from backend on component mount
+useEffect(() => {
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem('token'); // Get the JWT token from localStorage (or wherever you store it)
+
+            // Check if the token exists
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
+            // Fetch RSVP events (available events) with Authorization header
+            const rsvpResponse = await axios.get('http://localhost:4000/api/events/available', {
+                headers: {
+                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                }
+            });
+            setRsvpEvents(rsvpResponse.data);
+
+            // Fetch Scheduled events (registered events) with Authorization header
+            const scheduledResponse = await axios.get('http://localhost:4000/api/events/scheduled', {
+                headers: {
+                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                }
+            });
+            setScheduledEvents(scheduledResponse.data);
+        } catch (error) {
+            console.error("Error fetching events:", error);
+        }
+    };
+
+    fetchEvents(); // Call the function to fetch data
+}, []); // Empty dependency array ensures this runs only once on mount
+
 
     // Sort events by urgency (high > medium > low)
-    const sortedEvents = [...rsvpEvents].sort((a, b) => {
+    const sortedEvents = rsvpEvents.sort((a, b) => {
         const urgencyOrder = { high: 3, medium: 2, low: 1 };
         return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
     });
 
-    // Handle RSVP change
-    const handleRSVPChange = (id, value) => {
-        if (value === 'rejected') {
-            setSelectedEvent(rsvpEvents.find(event => event.id === id));
-            setRejectConfirmationOpen(true);
-        } else if (value === 'confirmed') {
-            const confirmedEvent = rsvpEvents.find(event => event.id === id);
-            setScheduledEvents([...scheduledEvents, { ...confirmedEvent, status: 'confirmed' }]);
-            setRsvpEvents(rsvpEvents.filter(event => event.id !== id));
-        } else {
-            setRsvpEvents(rsvpEvents.map(event => event.id === id ? { ...event, status: value } : event));
-        }
-    };
+// Handle RSVP change
+const handleRSVPChange = async (eventId, value) => {
+    console.log("Event ID being sent to register:", eventId);  // Check the eventId
     
+    if (value === 'confirmed') {
+        // Find the confirmed event in the RSVP list
+        const confirmedEvent = rsvpEvents.find(event => event._id === eventId);
+        
+        // Check if the confirmedEvent exists before proceeding
+        if (!confirmedEvent) {
+            console.error("Event not found for RSVP:", eventId);
+            return;
+        }
+
+        console.log("Confirmed Event:", confirmedEvent);
+
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+            
+            const decodedToken = jwtDecode(token);
+            const volunteerId = decodedToken.userId;
+
+            // Post request to register the volunteer for the event
+            await axios.post('http://localhost:4000/api/events/register', {
+                eventId: confirmedEvent._id,  // Use the '_id' property from the event
+                volunteerId
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            // Update the scheduled events and remove the event from RSVP
+            setScheduledEvents(prevScheduledEvents => [...prevScheduledEvents, confirmedEvent]);
+            setRsvpEvents(prevRsvpEvents => prevRsvpEvents.filter(event => event._id !== eventId));
+
+        } catch (error) {
+            console.error("Error confirming event:", error);
+        }
+
+    } else if (value === 'rejected') {
+        // Handle event rejection by opening the reject confirmation modal
+        const selected = rsvpEvents.find(event => event._id === eventId);
+        if (selected) {
+            setSelectedEvent(selected);  // Use '_id' here as well
+            setRejectConfirmationOpen(true);
+        } else {
+            console.error("Event not found for rejection:", eventId);
+        }
+    }
+};
+
+
+
     // Handle open/close modal
     const handleOpenModal = (event) => {
         setSelectedEvent(event);
         setOpenModal(true);
+        console.log("Event ID being sent to register:", event._id);  // Add this log
     };
 
     const handleCloseModal = () => {
@@ -77,13 +147,13 @@ const VolunteerDashboard = () => {
             }
         });
     };
-    
+
     const removeDate = (dateToRemove) => {
         setAvailabilityDates((prevDates) =>
             prevDates.filter((date) => date.toDateString() !== dateToRemove.toDateString())
         );
     };
-    
+
     return (
         <section className='snap-start min-h-screen flex pt-28 justify-center font-medium font-[Inter] bg-snow'>
             <div className='flex flex-col w-3/4 gap-8'>
@@ -101,7 +171,7 @@ const VolunteerDashboard = () => {
                         <BellIcon className='h-8 w-8 text-dark_gray cursor-pointer hover:text-shasta_red transition-colors duration-200' />
                     </button>
                 </div>
-                
+
                 {/* RSVP Waiting Section */}
                 <div>
                     <div className='py-5 px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl'>
@@ -121,7 +191,7 @@ const VolunteerDashboard = () => {
                                     </TableHead>
                                     <TableBody>
                                     {sortedEvents.map((event) => (
-                                        <TableRow key={event.id}>
+                                        <TableRow key={event._id}>
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{event.name}</TableCell>
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
                                                 <Button
@@ -143,7 +213,7 @@ const VolunteerDashboard = () => {
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
                                                 <Select
                                                     value={event.status}
-                                                    onChange={(e) => handleRSVPChange(event.id, e.target.value)}
+                                                    onChange={(e) => handleRSVPChange(event._id, e.target.value)}
                                                     displayEmpty
                                                     sx={{ fontFamily: 'Inter', color: 'lava_black', py: 0, width: '100%', height: '40px', minHeight: 'unset' }}
                                                 >
@@ -398,7 +468,6 @@ const VolunteerDashboard = () => {
                     </div>
                 </div>
 
-
                 {/* Event Details Modal */}
                 <Modal
                     open={openModal}
@@ -525,7 +594,6 @@ const VolunteerDashboard = () => {
                     </Box>
                 </Modal>
 
-
                 {/* Confirmation of Rejecting event Modal */}
                 <Modal
                     open={rejectConfirmationOpen}
@@ -584,13 +652,9 @@ const VolunteerDashboard = () => {
                         </div>
                     </Box>
                 </Modal>
-
             </div>
         </section>
     );
 }
 
 export default VolunteerDashboard;
-
-// Volunteer Dashboard css file
-
