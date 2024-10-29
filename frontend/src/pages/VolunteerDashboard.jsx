@@ -1,84 +1,169 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Select, MenuItem, Button, Modal, Box, Typography, Tabs, Tab, Card, CardContent, Grid } from '@mui/material';
+import { BellIcon, CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid'; 
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './VolunteerDashboard.css'; // Custom CSS for additional styling
-import { assets } from '../assets/assets';
-import { CalendarDateRangeIcon, MapPinIcon, ListBulletIcon, ExclamationCircleIcon, BellIcon } from '@heroicons/react/24/solid';
+import { jwtDecode } from 'jwt-decode'; 
 import axios from 'axios';
 
 const VolunteerDashboard = () => {
     const navigate = useNavigate();
 
-    // State to hold RSVP events for the volunteer
+    // State to hold RSVP and Scheduled events
     const [rsvpEvents, setRsvpEvents] = useState([]);
-
-    const [openModal, setOpenModal] = useState(false);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
     const [scheduledEvents, setScheduledEvents] = useState([]);
     const [tabIndex, setTabIndex] = useState(0);
     const [availabilityDates, setAvailabilityDates] = useState([]);
+    const [openModal, setOpenModal] = useState(false);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
+    const [showUnregisterButton, setShowUnregisterButton] = useState(false); //for the modal of events in calendar view
 
-    // Use useEffect to fetch events from the backend when the component loads
-    useEffect(() => {
-        axios.get('http://localhost:4000/api/volunteer-dashboard')
-            .then((response) => {
-                // Add base URL for images to ensure they load correctly
-                const eventsWithImages = response.data.map(event => ({
-                    ...event,
-                    image: `http://localhost:4000${event.image}`,
-                }));
-                setRsvpEvents(eventsWithImages); // Update the state with the data from the backend
-            })
-            .catch((error) => {
-                console.error("There was an error fetching the events!", error);
+
+// Fetch events from backend on component mount
+useEffect(() => {
+    const fetchEvents = async () => {
+        try {
+            const token = localStorage.getItem('token'); // Get the JWT token from localStorage (or wherever you store it)
+
+            // Check if the token exists
+            if (!token) {
+                console.error("No token found");
+                return;
+            }
+
+            // Fetch RSVP events (available events) with Authorization header
+            const rsvpResponse = await axios.get('http://localhost:4000/api/events/available', {
+                headers: {
+                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                }
             });
-    }, []); // Empty dependency array ensures this runs once when component mounts
+            setRsvpEvents(rsvpResponse.data);
+
+            // Fetch Scheduled events (registered events) with Authorization header
+            const scheduledResponse = await axios.get('http://localhost:4000/api/events/scheduled', {
+                headers: {
+                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                }
+            });
+            setScheduledEvents(scheduledResponse.data);
+        } catch (error) {
+            console.error("Error fetching events:", error);
+        }
+    };
+
+    fetchEvents(); // Call the function to fetch data
+}, []); // Empty dependency array ensures this runs only once on mount
+
 
     // Sort events by urgency (high > medium > low)
-    const sortedEvents = [...rsvpEvents].sort((a, b) => {
+    const sortedEvents = rsvpEvents.sort((a, b) => {
         const urgencyOrder = { high: 3, medium: 2, low: 1 };
         return urgencyOrder[b.urgency] - urgencyOrder[a.urgency];
     });
 
     // Handle RSVP change
-    const handleRSVPChange = (id, value) => {
-        const updatedEvent = rsvpEvents.find(event => event.id === id);
-    
-        if (value === 'rejected') {
-            setSelectedEvent(updatedEvent);
-            setRejectConfirmationOpen(true);
-        } else {
-            // Update status locally
-            const updatedRSVPEvents = rsvpEvents.map(event => 
-                event.id === id ? { ...event, status: value } : event
-            );
-    
-            setRsvpEvents(updatedRSVPEvents);
-    
-            // Update status on the backend
-            axios.put(`http://localhost:4000/api/volunteer-dashboard/${id}`, { status: value }) // Use the appropriate endpoint
-                .then(response => {
-                    console.log('Event status updated successfully:', response.data);
-                })
-                .catch(error => {
-                    console.error('Error updating the event status:', error);
+    const handleRSVPChange = async (eventId, value) => {
+        console.log("Event ID being sent to register:", eventId);  // Check the eventId
+        
+        if (value === 'confirmed') {
+            // Find the confirmed event in the RSVP list
+            const confirmedEvent = rsvpEvents.find(event => event._id === eventId);
+            
+            // Check if the confirmedEvent exists before proceeding
+            if (!confirmedEvent) {
+                console.error("Event not found for RSVP:", eventId);
+                return;
+            }
+
+            console.log("Confirmed Event:", confirmedEvent);
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error("No token found");
+                    return;
+                }
+                
+                const decodedToken = jwtDecode(token);
+                const volunteerId = decodedToken.userId;
+
+                // Post request to register the volunteer for the event
+                await axios.post('http://localhost:4000/api/events/register', {
+                    eventId: confirmedEvent._id,  // Use the '_id' property from the event
+                    volunteerId
+                }, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
                 });
-    
-            if (value === 'confirmed') {
-                setScheduledEvents([...scheduledEvents, { ...updatedEvent, status: 'confirmed' }]);
+
+                // Update the scheduled events and remove the event from RSVP
+                setScheduledEvents(prevScheduledEvents => [...prevScheduledEvents, confirmedEvent]);
+                setRsvpEvents(prevRsvpEvents => prevRsvpEvents.filter(event => event._id !== eventId));
+
+            } catch (error) {
+                console.error("Error confirming event:", error);
+            }
+
+        } else if (value === 'rejected') {
+            // Handle event rejection by opening the reject confirmation modal
+            const selected = rsvpEvents.find(event => event._id === eventId);
+            if (selected) {
+                setSelectedEvent(selected);  // Use '_id' here as well
+                setRejectConfirmationOpen(true);
+            } else {
+                console.error("Event not found for rejection:", eventId);
             }
         }
     };
-    
-    
+
+
+    //handle unregistering
+    const handleUnregister = async (eventId) => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            console.error("No token found");
+            return;
+          }
+      
+          const decodedToken = jwtDecode(token);
+          const volunteerId = decodedToken.userId;
+      
+          // Send a request to the backend to unregister the volunteer from the event
+          await axios.post('http://localhost:4000/api/events/unregister', {
+            eventId,
+            volunteerId
+          }, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+      
+          // Update the scheduled events by removing the unregistered event
+          setScheduledEvents(prevScheduledEvents => prevScheduledEvents.filter(event => event._id !== eventId));
+      
+          // Optionally, add the event back to the RSVP section so it can be registered for again
+          const unregisteredEvent = scheduledEvents.find(event => event._id === eventId);
+          setRsvpEvents(prevRsvpEvents => [...prevRsvpEvents, unregisteredEvent]);
+      
+        } catch (error) {
+          console.error("Error unregistering from event:", error);
+        }
+      };
+      
+
     // Handle open/close modal
-    const handleOpenModal = (event) => {
+    const handleOpenModal = (event, fromCalendar = false) => {
         setSelectedEvent(event);
         setOpenModal(true);
+        setShowUnregisterButton(fromCalendar); // Set true only for calendar events
+        console.log("Event ID being sent to register:", event._id);  // Add this log
     };
+    
 
     const handleCloseModal = () => {
         setOpenModal(false);
@@ -99,13 +184,13 @@ const VolunteerDashboard = () => {
             }
         });
     };
-    
+
     const removeDate = (dateToRemove) => {
         setAvailabilityDates((prevDates) =>
             prevDates.filter((date) => date.toDateString() !== dateToRemove.toDateString())
         );
     };
-    
+
     return (
         <section className='snap-start min-h-screen flex pt-28 justify-center font-medium font-[Inter] bg-snow'>
             <div className='flex flex-col w-3/4 gap-8'>
@@ -126,7 +211,7 @@ const VolunteerDashboard = () => {
                         <BellIcon className='h-8 w-8 text-dark_gray cursor-pointer hover:text-shasta_red transition-colors duration-200' />
                     </button>
                 </div>
-                
+
                 {/* RSVP Waiting Section */}
                 <div>
                     <div className='py-5 px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl'>
@@ -146,7 +231,7 @@ const VolunteerDashboard = () => {
                                     </TableHead>
                                     <TableBody>
                                     {sortedEvents.map((event) => (
-                                        <TableRow key={event.id}>
+                                        <TableRow key={event._id}>
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>{event.name}</TableCell>
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
                                                 <Button
@@ -168,7 +253,7 @@ const VolunteerDashboard = () => {
                                             <TableCell sx={{ fontFamily: 'Inter', color: '#352F36', border: '1px solid #E7E7E7', padding: '12px' }}>
                                                 <Select
                                                     value={event.status}
-                                                    onChange={(e) => handleRSVPChange(event.id, e.target.value)}
+                                                    onChange={(e) => handleRSVPChange(event._id, e.target.value)}
                                                     displayEmpty
                                                     sx={{ fontFamily: 'Inter', color: 'lava_black', py: 0, width: '100%', height: '40px', minHeight: 'unset' }}
                                                 >
@@ -208,7 +293,13 @@ const VolunteerDashboard = () => {
                                         return events.length > 0 ? (
                                             <div className='calendar-event-tile-container'>
                                                 {events.map((event, index) => (
-                                                    <Typography key={index} className='calendar-event-text calendar-event-tile' title={event.name}>
+                                                    <Typography
+                                                        key={index}
+                                                        className='calendar-event-text calendar-event-tile'
+                                                        title={event.name}
+                                                        onClick={() => handleOpenModal(event, true)}  // Pass true for calendar view
+                                                        style={{ cursor: 'pointer', color: 'white' }}
+                                                    >
                                                         {event.name}
                                                     </Typography>
                                                 ))}
@@ -219,6 +310,7 @@ const VolunteerDashboard = () => {
                                 />
                             </div>
                         )}
+
 
                         {/* CARD VIEW */}
                         {tabIndex === 1 && (
@@ -423,7 +515,6 @@ const VolunteerDashboard = () => {
                     </div>
                 </div>
 
-
                 {/* Event Details Modal */}
                 <Modal
                     open={openModal}
@@ -448,10 +539,10 @@ const VolunteerDashboard = () => {
                     >
                         {selectedEvent && (
                             <div>
-                                {/* Event Image */}
+                                {/* Event Image (optional) */}
                                 <div style={{ borderRadius: '16px 16px 0 0', overflow: 'hidden' }}>
                                     <img
-                                        src={selectedEvent.image}
+                                        src={selectedEvent.image}  // If your events have images
                                         alt={selectedEvent.name}
                                         style={{
                                             width: '100%',
@@ -478,27 +569,30 @@ const VolunteerDashboard = () => {
                                         {selectedEvent.name}
                                     </Typography>
 
-                                    {/* Event Information with Icons */}
+                                    {/* Date */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <CalendarDateRangeIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
                                             <strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
                                         </Typography>
                                     </Box>
-
+                                    
+                                    {/* Location */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <MapPinIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
-                                            <strong>Location:</strong> {selectedEvent.location}
+                                            <strong>Location:</strong> {selectedEvent.address?.address1}, {selectedEvent.address?.city}, {selectedEvent.address?.state} {selectedEvent.address?.zipcode}
                                         </Typography>
                                     </Box>
 
+
+                                    {/* Skills Required */}
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                         <ListBulletIcon className="h-6 w-6 text-gray-500" />
                                         <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
                                             <strong>Skills Required:</strong> 
                                             <Box sx={{ display: 'inline-flex', flexWrap: 'wrap', gap: 1, ml: 1 }}>
-                                                {selectedEvent.skills.split(',').map((skill, index) => (
+                                                {selectedEvent.skillsRequired?.map((skill, index) => (
                                                     <span
                                                         key={index}
                                                         style={{
@@ -515,25 +609,7 @@ const VolunteerDashboard = () => {
                                         </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                                        <ExclamationCircleIcon className="h-6 w-6 text-gray-500" />
-                                        <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' }, fontFamily: 'Inter', color: '#352F36' }}>
-                                            <strong>Urgency:</strong> 
-                                            <span
-                                                style={{
-                                                    background: selectedEvent.urgency === 'high' ? '#f8d7da' : selectedEvent.urgency === 'medium' ? '#fff3cd' : '#d4edda',
-                                                    padding: '3px 8px',
-                                                    borderRadius: '8px',
-                                                    fontSize: '0.8rem',
-                                                    marginLeft: '8px',
-                                                    color: '#000',
-                                                }}
-                                            >
-                                                {selectedEvent.urgency}
-                                            </span>
-                                        </Typography>
-                                    </Box>
-
+                                    {/* Event Description */}
                                     <Typography
                                         id="event-details-description"
                                         sx={{
@@ -544,11 +620,30 @@ const VolunteerDashboard = () => {
                                     >
                                         {selectedEvent.description}
                                     </Typography>
+
+                                    {/* Conditionally Render Unregister Button */}
+                                    {showUnregisterButton && (
+                                        <Button
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => handleUnregister(selectedEvent._id)}
+                                            sx={{
+                                                marginTop: '20px',
+                                                backgroundColor: '#f44336',
+                                                '&:hover': {
+                                                    backgroundColor: '#d32f2f',
+                                                },
+                                            }}
+                                        >
+                                            Unregister from Event
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
                         )}
                     </Box>
                 </Modal>
+
 
 
                 {/* Confirmation of Rejecting event Modal */}
@@ -609,13 +704,9 @@ const VolunteerDashboard = () => {
                         </div>
                     </Box>
                 </Modal>
-
             </div>
         </section>
     );
 }
 
 export default VolunteerDashboard;
-
-// Volunteer Dashboard css file
-
