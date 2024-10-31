@@ -1,6 +1,9 @@
 //frontend\src\pages\Eventmanagmentform2.js
-import React, { useState } from 'react';
+//frontend\src\pages\Eventmanagmentform2.js
+//frontend\src\pages\Eventmanagmentform2.js
 import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+
 import axios from 'axios';
 //import DatePicker from "react-multi-date-picker";
 import DatePicker from 'react-datepicker';  // Import the new DatePicker
@@ -18,12 +21,25 @@ const EventForm = () => {
     state: '',
     zipcode: '',
     date: '',
-    time: '',
     skillsRequired: [],
     urgency: ''
   });
+  const [states, setStates] = useState([]); 
   const [error, setError] = useState('');
   const token = localStorage.getItem('token'); // Assuming the admin is authenticated with JWT
+  
+
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/api/states');
+        setStates(response.data); // Store fetched states
+      } catch (error) {
+        console.error('Error fetching states:', error);
+      }
+    };
+    fetchStates();
+  }, []);
 
   // Skill options for the event
   const skillOptions = [
@@ -53,21 +69,21 @@ const EventForm = () => {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     // Log the date for debugging
     console.log("Selected Date:", formData.date);
-  
+
     // Try to convert the date into a valid Date object
     const selectedDate = new Date(formData.date);
-  
+
     if (isNaN(selectedDate.getTime())) {
       setError('Invalid date selected');
       return;
     }
-  
+
     // Format the date to ISO string
     const formattedDate = selectedDate.toISOString();
-  
+
     try {
       await axios.post(
         'http://localhost:4000/api/events/create',
@@ -83,8 +99,8 @@ const EventForm = () => {
       setError('Failed to create event');
     }
   };
-  
-  
+
+
   return (
     <>
       <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
@@ -172,59 +188,13 @@ const EventForm = () => {
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 >
                   <option value="">Select State *</option>
-                  {/* Add state options here */}
-                  <option value="">Select State</option>
-                  <option value="AL">Alabama</option>
-                  <option value="AK">Alaska</option>
-                  <option value="AZ">Arizona</option>
-                  <option value="AR">Arkansas</option>
-                  <option value="CA">California</option>
-                  <option value="CO">Colorado</option>
-                  <option value="CT">Connecticut</option>
-                  <option value="DE">Delaware</option>
-                  <option value="FL">Florida</option>
-                  <option value="GA">Georgia</option>
-                  <option value="HI">Hawaii</option>
-                  <option value="ID">Idaho</option>
-                  <option value="IL">Illinois</option>
-                  <option value="IN">Indiana</option>
-                  <option value="IA">Iowa</option>
-                  <option value="KS">Kansas</option>
-                  <option value="KY">Kentucky</option>
-                  <option value="LA">Louisiana</option>
-                  <option value="ME">Maine</option>
-                  <option value="MD">Maryland</option>
-                  <option value="MA">Massachusetts</option>
-                  <option value="MI">Michigan</option>
-                  <option value="MN">Minnesota</option>
-                  <option value="MS">Mississippi</option>
-                  <option value="MO">Missouri</option>
-                  <option value="MT">Montana</option>
-                  <option value="NE">Nebraska</option>
-                  <option value="NV">Nevada</option>
-                  <option value="NH">New Hampshire</option>
-                  <option value="NJ">New Jersey</option>
-                  <option value="NM">New Mexico</option>
-                  <option value="NY">New York</option>
-                  <option value="NC">North Carolina</option>
-                  <option value="ND">North Dakota</option>
-                  <option value="OH">Ohio</option>
-                  <option value="OK">Oklahoma</option>
-                  <option value="OR">Oregon</option>
-                  <option value="PA">Pennsylvania</option>
-                  <option value="RI">Rhode Island</option>
-                  <option value="SC">South Carolina</option>
-                  <option value="SD">South Dakota</option>
-                  <option value="TN">Tennessee</option>
-                  <option value="TX">Texas</option>
-                  <option value="UT">Utah</option>
-                  <option value="VT">Vermont</option>
-                  <option value="VA">Virginia</option>
-                  <option value="WA">Washington</option>
-                  <option value="WV">West Virginia</option>
-                  <option value="WI">Wisconsin</option>
-                  <option value="WY">Wyoming</option>
-                   </select>
+                  {states.map((state) => (
+                    <option key={state._id} value={state.code}>
+                      {state.name}
+                    </option>
+                  ))}
+                  </select>
+                
                 <input
                   type="number"
                   id="zipcode"
@@ -274,22 +244,13 @@ const EventForm = () => {
 
             {/* Date and Time */}
             <div className="mb-6">
-              <label className="block mb-2 font-bold">Date and Time of Event</label>
+              <label className="block mb-2 font-bold">Availability</label>
               <div className="flex flex-col gap-4">
-              <DatePicker
-                selected={formData.date} 
-                onChange={(date) => setFormData({ ...formData, date })}  // Update date state on change
-                dateFormat="yyyy/MM/dd"
-                className="w-full px-3 py-2 border rounded-md bg-gray-100"
-              />
-
-                <input
-                  type="time"
-                  name="time"
-                  id="time"
-                  value={formData.time}
-                  onChange={handleChange}
-                  className="w-[50%] px-5 py-2 border rounded-md text-gray-900 bg-gray-100"
+                <DatePicker
+                  selected={formData.date}
+                  onChange={(date) => setFormData({ ...formData, date })}  // Update date state on change
+                  dateFormat="yyyy/MM/dd"
+                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
               </div>
             </div>
@@ -306,7 +267,6 @@ const EventForm = () => {
         </div>
       </div>
     </>
-  );
+  ); 
 }
-
 export default EventForm;
