@@ -21,7 +21,8 @@ const EventForm = () => {
     state: '',
     zipcode: '',
     date: '',
-    time: '',
+    timeStart: '',
+    timeEnd: '',
     skillsRequired: [],
     urgency: ''
   });
@@ -116,8 +117,9 @@ const EventForm = () => {
         'http://localhost:4000/api/events/create',
         {
           ...formData,
-          date: formattedDate,  // Format date correctly before submission
-          time: formData.time   // Include time in the submission
+          date: formattedDate,
+          timeStart: formData.timeStart,
+          timeEnd: formData.timeEnd
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -283,13 +285,26 @@ const EventForm = () => {
               </div>
             </div>
             <div className="mb-6">
-              <label className="block mb-2 font-bold">Time *</label>
+              <label className="block mb-2 font-bold">Time Start *</label>
               <input
                 type="time"
-                id="time"
-                name="time"
-                value={formData.time}
-                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                id="timeStart"
+                name="timeStart"
+                value={formData.timeStart}
+                onChange={(e) => setFormData({ ...formData, timeStart: e.target.value })}
+                required
+                className="w-full px-3 py-2 border rounded-md bg-gray-100"
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block mb-2 font-bold">Time End *</label>
+              <input
+                type="time"
+                id="timeEnd"
+                name="timeEnd"
+                value={formData.timeEnd}
+                onChange={(e) => setFormData({ ...formData, timeEnd: e.target.value })}
                 required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
               />
