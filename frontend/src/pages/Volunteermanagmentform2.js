@@ -3,14 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import DatePicker from "react-multi-date-picker";
 import Select from 'react-select';
- // Add axios for API requests
 
-
-
-
-function Volunteermanagmentform({ setVolunteerFormCompleted }) {
+function Volunteermanagementform({ setVolunteerFormCompleted }) {
   const navigate = useNavigate();
-  const [states, setStates] =useState([]);
+  const [states, setStates] = useState([]);
   const [values, setValues] = useState([new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]);
   const [selectedOptions, setSelectedOptions] = useState([]);
   const [formData, setFormData] = useState({
@@ -27,12 +23,13 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
   });
   const [error, setError] = useState('');
 
-  useEffect(()=>{
-    const fetchStates= async()=>{
-      try{
-        const response = await axios.get('http:///localhost:4000/api/states');
-        setStates(response.data);// store fetched states
-      } catch (error){
+  // Fetch the list of states
+  useEffect(() => {
+    const fetchStates = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/api/states');
+        setStates(response.data);
+      } catch (error) {
         console.error('Error fetching states:', error);
       }
     };
@@ -54,7 +51,18 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
         const response = await axios.get('http://localhost:4000/api/volunteers/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setFormData(response.data);
+        setFormData({
+          firstName: response.data.firstName || '',
+          lastName: response.data.lastName || '',
+          preferences: response.data.preferences || '',
+          skills: response.data.skills || [],
+          address1: response.data.address.address1 || '',
+          address2: response.data.address.address2 || '',
+          city: response.data.address.city || '',
+          state: response.data.address.state || '',
+          zipcode: response.data.address.zipcode || '',
+          availability: response.data.availability || []
+        });
         setSelectedOptions(response.data.skills.map(skill => ({ value: skill, label: skill })));
         setValues(response.data.availability.map(date => new Date(date)));
       } catch (err) {
@@ -85,20 +93,45 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting data:", {
+      ...formData,
+      availability: values.map(date => {
+        // Convert string to Date object if necessary
+        if (typeof date === 'string') {
+          date = new Date(date.replace(/-/g, '/')); // Replace any dashes with slashes if needed
+        }
+        // Check if date is valid before calling toISOString
+        return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
+      }).filter(Boolean)
+    });
+  
     try {
       const token = localStorage.getItem('token');
       await axios.put('http://localhost:4000/api/volunteers/profile', {
         ...formData,
-        availability: values.map(date => date.toISOString())
+        availability: values.map(date => {
+          if (typeof date === 'string') {
+            date = new Date(date.replace(/-/g, '/'));
+          }
+          return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
+        }).filter(Boolean)
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setVolunteerFormCompleted(true);
       navigate('/volunteer-dashboard');
     } catch (err) {
-      setError('Failed to update profile');
+      if (err.response) {
+        console.error("Error response:", err.response.data);
+        setError(err.response.data.msg || 'Failed to update profile');
+      } else {
+        console.error("Error:", err);
+        setError('Failed to update profile');
+      }
     }
   };
+  
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
@@ -117,7 +150,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="firstName"
                 name="firstName"
-                value={formData.firstName}
+                value={formData.firstName || ''}
                 onChange={handleChange}
                 placeholder="Enter your first name here *"
                 maxLength={50}
@@ -128,7 +161,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="lastName"
                 name="lastName"
-                value={formData.lastName}
+                value={formData.lastName || ''}
                 onChange={handleChange}
                 placeholder="Enter your last name here *"
                 maxLength={50}
@@ -146,7 +179,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="address1"
                 name="address1"
-                value={formData.address1}
+                value={formData.address1 || ''}
                 onChange={handleChange}
                 placeholder="Address 1 *"
                 maxLength={100}
@@ -157,7 +190,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="address2"
                 name="address2"
-                value={formData.address2}
+                value={formData.address2 || ''}
                 onChange={handleChange}
                 placeholder="Address 2"
                 maxLength={100}
@@ -167,7 +200,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="city"
                 name="city"
-                value={formData.city}
+                value={formData.city || ''}
                 onChange={handleChange}
                 placeholder="City *"
                 maxLength={100}
@@ -177,7 +210,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
               <select
                 name="state"
                 id="state"
-                value={formData.state}
+                value={formData.state || ''}
                 onChange={handleChange}
                 required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
@@ -189,15 +222,13 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
                   </option>
                 ))}
               </select>
-                
               <input
-                type="number"
+                type="text"
                 id="zipcode"
                 name="zipcode"
-                value={formData.zipcode}
+                value={formData.zipcode || ''}
                 onChange={handleChange}
                 placeholder="Zipcode *"
-                minLength={5}
                 maxLength={9}
                 required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
@@ -212,7 +243,7 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
               <textarea
                 id="preferences"
                 name="preferences"
-                value={formData.preferences}
+                value={formData.preferences || ''}
                 onChange={handleChange}
                 rows="5"
                 placeholder="Enter Preferences here"
@@ -255,5 +286,4 @@ function Volunteermanagmentform({ setVolunteerFormCompleted }) {
   );
 }
 
-
-export default Volunteermanagmentform;
+export default Volunteermanagementform;

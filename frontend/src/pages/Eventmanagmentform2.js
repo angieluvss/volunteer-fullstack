@@ -21,6 +21,7 @@ const EventForm = () => {
     state: '',
     zipcode: '',
     date: '',
+    time: '',
     skillsRequired: [],
     urgency: ''
   });
@@ -67,39 +68,66 @@ const EventForm = () => {
   };
 
   // Handle form submission
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   // Log the date for debugging
+  //   console.log("Selected Date:", formData.date);
+
+  //   // Try to convert the date into a valid Date object
+  //   const selectedDate = new Date(formData.date);
+
+  //   if (isNaN(selectedDate.getTime())) {
+  //     setError('Invalid date selected');
+  //     return;
+  //   }
+
+  //   // Format the date to ISO string
+  //   const formattedDate = selectedDate.toISOString();
+
+  //   try {
+  //     await axios.post(
+  //       'http://localhost:4000/api/events/create',
+  //       {
+  //         ...formData,
+  //         date: formData.date ? formData.date.toISOString() : '',  // Format date before submission
+  //       },
+  //       { headers: { Authorization: `Bearer ${token}` } }
+  //     );
+  //     navigate('/admin-dashboard');  // Redirect to admin dashboard after event creation
+  //   } catch (err) {
+  //     console.error("Error during event creation:", err.response?.data);  // Log detailed error message
+  //     setError('Failed to create event');
+  //   }
+  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    // Log the date for debugging
-    console.log("Selected Date:", formData.date);
-
-    // Try to convert the date into a valid Date object
+  
     const selectedDate = new Date(formData.date);
-
     if (isNaN(selectedDate.getTime())) {
       setError('Invalid date selected');
       return;
     }
-
-    // Format the date to ISO string
+  
     const formattedDate = selectedDate.toISOString();
-
+  
     try {
       await axios.post(
         'http://localhost:4000/api/events/create',
         {
           ...formData,
-          date: formData.date ? formData.date.toISOString() : '',  // Format date before submission
+          date: formattedDate,  // Format date correctly before submission
+          time: formData.time   // Include time in the submission
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      navigate('/admin-dashboard');  // Redirect to admin dashboard after event creation
+      navigate('/admin-dashboard');
     } catch (err) {
-      console.error("Error during event creation:", err.response?.data);  // Log detailed error message
+      console.error("Error during event creation:", err.response?.data);
       setError('Failed to create event');
     }
   };
-
+  
 
   return (
     <>
@@ -244,7 +272,7 @@ const EventForm = () => {
 
             {/* Date and Time */}
             <div className="mb-6">
-              <label className="block mb-2 font-bold">Availability</label>
+              <label className="block mb-2 font-bold">Date of Event *</label>
               <div className="flex flex-col gap-4">
                 <DatePicker
                   selected={formData.date}
@@ -253,6 +281,18 @@ const EventForm = () => {
                   className="w-full px-3 py-2 border rounded-md bg-gray-100"
                 />
               </div>
+            </div>
+            <div className="mb-6">
+              <label className="block mb-2 font-bold">Time *</label>
+              <input
+                type="time"
+                id="time"
+                name="time"
+                value={formData.time}
+                onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                required
+                className="w-full px-3 py-2 border rounded-md bg-gray-100"
+              />
             </div>
 
             {/* Submit Button */}
