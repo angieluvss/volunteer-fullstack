@@ -1,52 +1,43 @@
+//frontend\src\pages\VolunteerHistory.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import { Container, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 
 function VolunteerHistory() {
-  const [events, setEvents] = useState([]); // State to store events
-
-  const [newEvent, setNewEvent] = useState({
-    name: '',
-    description: '',
-    location: '',
-    date: '',
-    urgency: 'low',
-    skills: '',
-    status: 'no',
-  });
+  const [history, setHistory] = useState([]); // State to store volunteer history
 
   // Use useEffect to fetch events from the backend when the component loads
   useEffect(() => {
-    axios.get('http://localhost:4000/api/volunteer-history') // Ensure the URL matches your backend API
-      .then((response) => {
-        setEvents(response.data); // Update events state with data from the backend
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the events!", error);
-      });
-  }, []); // Empty dependency array ensures this runs once when component mounts
+    const fetchVolunteerHistory = async () => {
+      try {
+        const token = localStorage.getItem('token'); // Get token from localStorage
+        if (!token) {
+          console.error("No token found.");
+          return;
+        }
 
-  const handleChange = (e) => {
-    setNewEvent({
-      ...newEvent,
-      [e.target.name]: e.target.value,
-    });
-  };
+        // Replace with your backend API endpoint to fetch volunteer history
+        const response = await axios.get('http://localhost:4000/api/volunteers/history', {
+          headers: {
+            Authorization: `Bearer ${token}` // Attach token to request headers
+          }
+        });
+        setHistory(response.data); // Set fetched history data to state
+      } catch (error) {
+        console.error("Error fetching volunteer history:", error);
+      }
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setEvents([...events, { ...newEvent, id: events.length + 1 }]);
-    setNewEvent({ name: '', description: '', location: '', date: '', urgency: 'low', skills: '', status: 'no' });
-  };
+    fetchVolunteerHistory();
+  }, []); // Run only once when component mounts
 
   return (
     <div style={{ 
       minHeight: '100vh', 
       background: 'linear-gradient(to right, #febac2, #f68181)', 
-      paddingTop: '0px', 
-      marginTop: '0px'
+      paddingTop: '20px', 
     }}>
-      <Container className="volunteer-history-container" maxWidth="lg" sx={{  
+      <Container maxWidth="lg" sx={{  
         backgroundColor: '#fefafa', 
         padding: '40px', 
         borderRadius: '20px', 
@@ -56,86 +47,44 @@ function VolunteerHistory() {
         width: '80%'
       }}>
         <Typography variant="h4" gutterBottom>
-          Volunteer History
+          Volunteer Event History
         </Typography>
 
-        <form onSubmit={handleSubmit} style={{ marginBottom: '2rem', display: 'flex', justifyContent: 'center', gap: '10px' }}>
-          <TextField
-            label="Event Name"
-            name="name"
-            value={newEvent.name}
-            onChange={handleChange}
-            required
-          />
-          <TextField
-            label="Event Description"
-            name="description"
-            value={newEvent.description}
-            onChange={handleChange}
-          />
-          <TextField
-            label="Location"
-            name="location"
-            value={newEvent.location}
-            onChange={handleChange}
-          />
-          <TextField
-            label="Date"
-            name="date"
-            type="date"
-            value={newEvent.date}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            required
-          />
-          <TextField
-            label="Skills Required"
-            name="skills"
-            value={newEvent.skills}
-            onChange={handleChange}
-            placeholder="Leadership, Communication"
-          />
-          <Button variant="contained" color="primary" type="submit" sx={{ height: '55px' }}>
-            Add Event
-          </Button>
-        </form>
-
-        <TableContainer component={Paper} className="event-table">
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><strong>Event Name</strong></TableCell>
-                <TableCell><strong>Description</strong></TableCell>
-                <TableCell><strong>Location</strong></TableCell>
-                <TableCell><strong>Urgency</strong></TableCell>
-                <TableCell><strong>Date</strong></TableCell>
-                <TableCell><strong>Skills Required</strong></TableCell>
-                <TableCell><strong>Status</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {events.map((event) => (
-                <TableRow key={event.id}>
-                  <TableCell>{event.name}</TableCell>
-                  <TableCell>{event.description}</TableCell>
-                  <TableCell>{event.location}</TableCell>
-                  <TableCell className={event.urgency === 'high' ? 'high-urgency' : 'low-urgency'}>
-                    {event.urgency}
-                  </TableCell>
-                  <TableCell>{event.date}</TableCell>
-                  <TableCell>{event.skills}</TableCell>
-                  <TableCell className={event.status === 'yes' ? 'status-yes' : 'status-no'}>
-                    {event.status === 'yes' ? '✔️' : '❌'}
-                  </TableCell>
+        {history.length > 0 ? (
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><strong>Event Name</strong></TableCell>
+                  <TableCell><strong>Description</strong></TableCell>
+                  <TableCell><strong>Location</strong></TableCell>
+                  <TableCell><strong>Date</strong></TableCell>
+                  <TableCell><strong>Skills Required</strong></TableCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+              </TableHead>
+              <TableBody>
+                {history.map((event) => (
+                  <TableRow key={event._id}>
+                    <TableCell>{event.name}</TableCell>
+                    <TableCell>{event.description}</TableCell>
+                    <TableCell>
+                      {`${event.address?.address1 || ''}, ${event.address?.city || ''}, ${event.address?.state || ''} ${event.address?.zipcode || ''}`}
+                    </TableCell>
+                    <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>
+                    <TableCell>{event.skillsRequired.join(', ')}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        ) : (
+          <Typography variant="h6" color="textSecondary" sx={{ marginTop: 3 }}>
+            No event history available.
+          </Typography>
+        )}
       </Container>
     </div>
   );
 }
 
 export default VolunteerHistory;
-

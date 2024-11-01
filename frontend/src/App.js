@@ -1,3 +1,4 @@
+//frontend\src\App.js
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme'; // Import the theme
@@ -19,26 +20,28 @@ import { jwtDecode } from 'jwt-decode';  // Named import for jwt-decode
 
 function App() {
   const [token, setToken] = useState(null); // Holds user token for authentication
-  const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(false); // Track volunteer form completion
-  const [adminSetupCompleted, setAdminSetupCompleted] = useState(false); // Track admin initial setup completion
+  //const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(false); // Track volunteer form completion
+  //const [adminSetupCompleted, setAdminSetupCompleted] = useState(false); // Track admin initial setup completion
+  const [role, setRole] = useState(null); // Holds user role for conditional rendering
 
   // Check token expiration and remove it if expired
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      const decodedToken = jwtDecode(storedToken); // Decode the token
-      const currentTime = Date.now() / 1000; // Get current time in seconds
-      
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const currentTime = Date.now() / 1000;
+
       if (decodedToken.exp < currentTime) {
         // If the token has expired, clear it and redirect to login
         localStorage.removeItem('token');
         setToken(null);
+        setRole(null);
       } else {
-        // If the token is valid, set it in the state
-        setToken(storedToken);
+        setRole(decodedToken.role); // Set role based on decoded token
       }
+    } else {
+      setRole(null);
     }
-  }, []); // Runs once on component mount
+  }, [token]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -47,10 +50,11 @@ function App() {
         <NavBar
           token={token}
           setToken={setToken}
-          volunteerFormCompleted={volunteerFormCompleted}
-          setVolunteerFormCompleted={setVolunteerFormCompleted}
-          adminSetupCompleted={adminSetupCompleted}
-          setAdminSetupCompleted={setAdminSetupCompleted}
+          role={role} // Pass role to NavBar
+          //volunteerFormCompleted={volunteerFormCompleted}
+          //setVolunteerFormCompleted={setVolunteerFormCompleted}
+          //adminSetupCompleted={adminSetupCompleted}
+          //setAdminSetupCompleted={setAdminSetupCompleted}
         />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -69,10 +73,10 @@ function App() {
 
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
           <Route path="/volcards" element={<VolunteerMatchingForm />} />
-          <Route path="/volunteermanagmentform" element={ <Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted} /> } />
-          <Route path="/eventmanagmentform" element={ <EventForm setAdminSetupCompleted={setAdminSetupCompleted} /> } />
+          <Route path="/volunteermanagmentform" element={ <Volunteermanagmentform /> } />
+          <Route path="/eventmanagmentform" element={ <EventForm /> } />
           <Route path="/notifs" element={<Notifications />} />
-          <Route path="/verify" element={<Verification setAdminSetupCompleted={setAdminSetupCompleted} />} />
+          <Route path="/verify" element={<Verification />} />
         </Routes>
       </Router>
     </ThemeProvider>
