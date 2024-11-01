@@ -11,6 +11,8 @@ const AdminDashboard = ({ token, setToken }) => {
   // Fetch events when the component mounts
   useEffect(() => {
     const fetchEvents = async () => {
+      const token = localStorage.getItem('token');
+      console.log("Token being sent:", token);  // Debug line
       try {
         const response = await axios.get('http://localhost:4000/api/events', {
           headers: { Authorization: `Bearer ${token}` }
@@ -21,7 +23,7 @@ const AdminDashboard = ({ token, setToken }) => {
         setError('Failed to fetch events');
       }
     };
-
+  
     fetchEvents();
   }, [token]);
 

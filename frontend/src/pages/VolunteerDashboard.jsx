@@ -200,7 +200,7 @@ useEffect(() => {
                         <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
                             Hello [Volunteer Name]
                         </h1>
-                        <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>
+                        <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline' onClick={() => navigate('/volunteermanagmentform', { state: { isEditing: true } })}>
                             edit profile
                         </button>
                         <button onClick={() => navigate('/volunteer-history')} className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline'>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { scroller, scrollSpy } from 'react-scroll';
-import { Bars3BottomRightIcon, DocumentChartBarIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { Bars3BottomRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import { assets } from '../assets/assets';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, setVolunteerFormCompleted, setAdminSetupCompleted }) => {
+const NavBar = ({ token, setToken, role, setRole, volunteerFormCompleted, setVolunteerFormCompleted }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -17,7 +17,6 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
 
     // Scroll to a specific section
     const scrollToSection = (section) => {
-        console.log(`Scrolling to: ${section}`);
         setIsScrolling(true);
         scroller.scrollTo(section, {
             containerId: 'scroll-container',
@@ -41,7 +40,6 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
     // Effect to handle scrolling after navigation
     useEffect(() => {
         if (pendingScroll && location.pathname === '/') {
-            // Add a slight delay to ensure DOM has rendered
             setTimeout(() => {
                 scrollToSection(pendingScroll);
                 setPendingScroll(null); // Reset pending scroll
@@ -88,6 +86,15 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
         };
     }, [isScrolling]);
 
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
+        localStorage.removeItem('volunteerFormCompleted');
+        setToken(null);
+        setRole(null);
+        setVolunteerFormCompleted('null'); // Reset to initial state
+        navigate('/'); // Redirect to homepage or login
+      };
 
     return (
         <nav className='bg-snow border border-light_gray fixed w-full z-50'>
@@ -111,42 +118,37 @@ const NavBar = ({ token, setToken, volunteerFormCompleted, adminSetupCompleted, 
 
                     {/* Buttons */}
                     <div className='flex flex-col md:flex-row md:gap-3'> 
-                        { token ? (
-                            <>
-                                {
-                                    token.role === 'admin' && adminSetupCompleted && (
-                                        <button onClick={() => navigate('/admin-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/admin-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Admin Dashboard</button>
-                                    )
-                                }
-                                {
-                                    token.role === 'volunteer' && volunteerFormCompleted && (
-                                        <button onClick={() => navigate('/volunteer-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteer-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>Volunteer Dashboard</button>
-                                    )
-                                }
-                                <div className='mb-6 mx-6 md:m-0'>
-                                <button 
-                                    onClick={() => { 
-                                        setToken(null); // Set token to null to log out
-                                        setVolunteerFormCompleted(false); // Reset volunteer form completion status
-                                        setAdminSetupCompleted(false); // Reset admin setup completion status
-                                        navigate('/'); // Redirect to home page
-                                    }} 
-                                    className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'
-                                    >
-                                    Log Out
-                                    </button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <div className='mt-0 mb-6 mx-6 md:m-0'>
-                                    <button onClick={() => navigate('/login')} className='btn static font-medium text-2xl md:text-base font-[Inter] text-lava_black bg-transparent border border-shasta_red py-2 px-4 rounded-2xl hover:bg-light_pink'>Login</button>
-                                </div>
-                                <div className='mb-6 mx-6 md:m-0'>
-                                    <button onClick={() => navigate('/register')} className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Get Started</button>
-                                </div>
-                            </>
-                        )}
+                    {token ? (
+                        <>
+                            {role === 'admin' && (
+                                <button onClick={() => navigate('/admin-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/admin-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>
+                                    Admin Dashboard
+                                </button>
+                            )}
+                            {role === 'volunteer' && volunteerFormCompleted === 'not completed' && (
+                                <button onClick={() => navigate('/volunteermanagmentform')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteermanagmentform' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>
+                                    Complete Your Profile
+                                </button>
+                            )}
+                            {role === 'volunteer' && volunteerFormCompleted === 'completed' && (
+                                <button onClick={() => navigate('/volunteer-dashboard')} className={`mb-6 mx-6 md:m-0 mr-auto font-medium text-2xl md:text-base font-[Inter] ${location.pathname === '/volunteer-dashboard' ? 'text-shasta_red underline' : 'text-lava_black hover:text-shasta_red hover:underline'}`}>
+                                    Volunteer Dashboard
+                                </button>
+                            )}
+                            <div className='mb-6 mx-6 md:m-0'>
+                                <button onClick={handleLogout} className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Log Out</button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className='mt-0 mb-6 mx-6 md:m-0'>
+                                <button onClick={() => navigate('/login')} className='btn static font-medium text-2xl md:text-base font-[Inter] text-lava_black bg-transparent border border-shasta_red py-2 px-4 rounded-2xl hover:bg-light_pink'>Login</button>
+                            </div>
+                            <div className='mb-6 mx-6 md:m-0'>
+                                <button onClick={() => navigate('/register')} className='btn static font-medium text-2xl md:text-base font-[Inter] bg-shasta_red text-snow rounded-2xl p-2 ml-auto hover:bg-gradient-to-r from-shasta_red to-persian_plum'>Get Started</button>
+                            </div>
+                        </>
+                    )}
                     </div>
                 </ul>
             </div>

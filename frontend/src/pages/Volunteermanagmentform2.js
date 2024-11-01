@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import DatePicker from "react-multi-date-picker";
 import Select from 'react-select';
+import { jwtDecode } from 'jwt-decode';
 
 function Volunteermanagementform({ setVolunteerFormCompleted }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isEditing = location.state?.isEditing || false;
   const [states, setStates] = useState([]);
   const [values, setValues] = useState([new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]);
   const [selectedOptions, setSelectedOptions] = useState([]);
@@ -48,6 +51,22 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          console.error("No token found, redirecting to login.");
+          navigate('/login');
+          return;
+        }
+  
+        // Decode token and check expiration
+        const decodedToken = jwtDecode(token);
+        const currentTime = Date.now() / 1000; // in seconds
+        if (decodedToken.exp < currentTime) {
+          console.error("Token has expired, redirecting to login.");
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
+        }
+  
         const response = await axios.get('http://localhost:4000/api/volunteers/profile', {
           headers: { Authorization: `Bearer ${token}` }
         });
@@ -66,11 +85,17 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
         setSelectedOptions(response.data.skills.map(skill => ({ value: skill, label: skill })));
         setValues(response.data.availability.map(date => new Date(date)));
       } catch (err) {
+        console.error('Failed to load profile:', err);
         setError('Failed to load profile');
+        // Check if error is 401 Unauthorized (token might be invalid)
+        if (err.response && err.response.status === 401) {
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
       }
     };
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   // Handle changes to form inputs
   const handleChange = (e) => {
@@ -93,51 +118,51 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting data:", {
-      ...formData,
-      availability: values.map(date => {
-        // Convert string to Date object if necessary
-        if (typeof date === 'string') {
-          date = new Date(date.replace(/-/g, '/')); // Replace any dashes with slashes if needed
-        }
-        // Check if date is valid before calling toISOString
-        return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
-      }).filter(Boolean)
-    });
-  
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.error("No token found, redirecting to login.");
+      navigate('/login'); // Redirect to login if no token
+      return;
+    }
+
+    console.log("Submitting profile data:", formData);
+
     try {
-      const token = localStorage.getItem('token');
-      await axios.put('http://localhost:4000/api/volunteers/profile', {
-        ...formData,
-        availability: values.map(date => {
-          if (typeof date === 'string') {
-            date = new Date(date.replace(/-/g, '/'));
-          }
-          return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
-        }).filter(Boolean)
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setVolunteerFormCompleted(true);
+      await axios.put(
+        'http://localhost:4000/api/volunteers/profile',
+        {
+          ...formData,
+          availability: values.map(date => {
+            if (typeof date === 'string') {
+              date = new Date(date.replace(/-/g, '/'));
+            }
+            return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
+          }).filter(Boolean)
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+      console.log("Profile updated successfully, redirecting to dashboard.");
+      setVolunteerFormCompleted('completed');
+      localStorage.setItem('volunteerFormCompleted', 'completed');
       navigate('/volunteer-dashboard');
     } catch (err) {
       if (err.response) {
         console.error("Error response:", err.response.data);
         setError(err.response.data.msg || 'Failed to update profile');
       } else {
-        console.error("Error:", err);
+        console.error("Error:", err.message);
         setError('Failed to update profile');
       }
     }
   };
-  
-  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#faa0a5] pt-20">
       <div className="w-full max-w-6xl p-6 bg-white border-2 border-red-200 rounded-2xl shadow-lg mt-7">
         <h2 className="mb-5 text-2xl xl:text-5xl font-extrabold text-center text-[#e21c34]">
-          Start Volunteering by Completing Your Profile
+          {isEditing ? 'Editing Profile' : 'Start Volunteering by Completing Your Profile'}
         </h2>
         {error && <p className="text-red-500">{error}</p>}
         <form onSubmit={handleSubmit}>
@@ -264,22 +289,31 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
           </div>
 
           {/* Availability */}
-          <div className="mb-6">
-            <label className="block mb-2 font-bold">Select Your Availability *</label>
-            <DatePicker
-              multiple
-              value={values}
-              onChange={setValues}
-            />
-          </div>
+          {!isEditing && (
+            <div className="mb-6">
+              <label className="block mb-2 font-bold">Select Your Availability *</label>
+              <DatePicker multiple value={values} onChange={setValues} />
+            </div>
+          )}
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            className="w-full px-4 py-3 font-bold text-white bg-[#e21c34] rounded-md hover:bg-red-700"
-          >
-            Complete
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="submit"
+              className="px-4 py-3 font-bold text-white bg-[#e21c34] rounded-md hover:bg-red-700"
+            >
+              Complete
+            </button>
+            {isEditing && (
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="px-4 py-3 font-bold text-[#e21c34] bg-white border border-[#e21c34] rounded-md hover:bg-red-100"
+              >
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       </div>
     </div>

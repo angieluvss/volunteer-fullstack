@@ -14,31 +14,30 @@ import Volunteermanagmentform from './pages/Volunteermanagmentform2';
 import EventForm from './pages/Eventmanagmentform2';
 import Notifications from './pages/notifs';
 import Verification from './pages/Verification';
-import { jwtDecode } from 'jwt-decode';  // Named import for jwt-decode
-
+import { jwtDecode } from 'jwt-decode';
+import { fetchProfileStatus } from './utils/fetchProfileStatus';
+import axios from 'axios';
 
 function App() {
-  const [token, setToken] = useState(null); // Holds user token for authentication
-  const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(false); // Track volunteer form completion
-  const [adminSetupCompleted, setAdminSetupCompleted] = useState(false); // Track admin initial setup completion
+  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [role, setRole] = useState(localStorage.getItem('role') || null);
+  const [volunteerFormCompleted, setVolunteerFormCompleted] = useState(
+    localStorage.getItem('volunteerFormCompleted') || (role === 'admin' ? 'null' : 'not completed')
+  );
 
-  // Check token expiration and remove it if expired
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    if (storedToken) {
-      const decodedToken = jwtDecode(storedToken); // Decode the token
-      const currentTime = Date.now() / 1000; // Get current time in seconds
-      
-      if (decodedToken.exp < currentTime) {
-        // If the token has expired, clear it and redirect to login
-        localStorage.removeItem('token');
-        setToken(null);
-      } else {
-        // If the token is valid, set it in the state
-        setToken(storedToken);
+    const initProfileStatus = async () => {
+      try {
+        if (token) {
+          await fetchProfileStatus(setRole, setVolunteerFormCompleted);
+        }
+      } catch (error) {
+        console.error("Failed to fetch profile status in App:", error);
       }
-    }
-  }, []); // Runs once on component mount
+    };
+    initProfileStatus();
+  }, [token]);
+  
 
   return (
     <ThemeProvider theme={theme}>
@@ -47,32 +46,30 @@ function App() {
         <NavBar
           token={token}
           setToken={setToken}
+          role={role}
+          setRole={setRole}
           volunteerFormCompleted={volunteerFormCompleted}
           setVolunteerFormCompleted={setVolunteerFormCompleted}
-          adminSetupCompleted={adminSetupCompleted}
-          setAdminSetupCompleted={setAdminSetupCompleted}
         />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setToken={setToken} />} />
-          <Route path="/register" element={<Register setToken={setToken} />} />
+          <Route path="/login" element={<Login setToken={setToken} setRole={setRole} setVolunteerFormCompleted={setVolunteerFormCompleted} />} />
+          <Route path="/register" element={<Register setToken={setToken} setRole={setRole} setVolunteerFormCompleted={setVolunteerFormCompleted} />} />
           
           {/* Protected Routes */}
           <Route 
             path="/admin-dashboard" 
-            element={token ? <AdminDashboard token={token} setToken={setToken} /> : <Navigate to="/login" />} 
+            element={token ? <AdminDashboard /> : <Navigate to="/login" />} 
           />
           <Route 
             path="/volunteer-dashboard" 
             element={token ? <VolunteerDashboard /> : <Navigate to="/login" />} 
           />
-
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
           <Route path="/volcards" element={<VolunteerMatchingForm />} />
-          <Route path="/volunteermanagmentform" element={ <Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted} /> } />
-          <Route path="/eventmanagmentform" element={ <EventForm setAdminSetupCompleted={setAdminSetupCompleted} /> } />
+          <Route path="/volunteermanagmentform" element={<Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted}/>} />
+          <Route path="/eventmanagmentform" element={<EventForm />} />
           <Route path="/notifs" element={<Notifications />} />
-          <Route path="/verify" element={<Verification setAdminSetupCompleted={setAdminSetupCompleted} />} />
         </Routes>
       </Router>
     </ThemeProvider>

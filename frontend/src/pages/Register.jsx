@@ -1,61 +1,37 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { fetchProfileStatus } from '../utils/fetchProfileStatus';
 
-const Register = () => {
-  const [isAdmin, setIsAdmin] = useState(false);  // Track if the user is registering as an admin
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    confirmPassword: ''
-  });
+const Register = ({ setToken, setRole, setVolunteerFormCompleted }) => {
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  // Handle switch between admin and volunteer
   const handleSwitch = () => setIsAdmin(!isAdmin);
+  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  // Handle input changes
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-// Handle form submission
-const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Password matching validation
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-  
+
     try {
       const role = isAdmin ? 'admin' : 'volunteer';
-      
-      // Use the correct backend URL (http://localhost:4000)
-      const response = await axios.post('http://localhost:4000/api/auth/register', {
-        email: formData.email,
-        password: formData.password,
-        role
-      });
-  
-      const { token } = response.data; // Extract the token from the response
-  
-      // Store token in localStorage (or sessionStorage)
-      localStorage.setItem('token', token); // Save token for future requests
-  
-      setError('');  // Clear any errors
-  
-      // Navigate based on role
-      if (role === 'admin') {
-        navigate('/verify');  // Navigate to the verification page for admins
-      } else {
-        navigate('/volunteermanagmentform');  // Navigate to volunteer management form
-      }
+      const response = await axios.post('http://localhost:4000/api/auth/register', { ...formData, role });
+      const { token } = response.data;
+
+      localStorage.setItem('token', token);
+      setToken(token);
+
+      // Fetch profile status
+      await fetchProfileStatus(setRole, setVolunteerFormCompleted);
+
+      navigate(role === 'admin' ? '/verify' : '/volunteermanagmentform'); // VERIFY DOEST EXIST BUT WE CAN FIX THAT LATERRRR
     } catch (err) {
       setError(err.response?.data?.msg || 'An error occurred during registration');
     }
