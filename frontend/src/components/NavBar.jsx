@@ -1,3 +1,4 @@
+//frontend\src\components\NavBar.jsx
 import React, { useState, useEffect } from 'react';
 import { scroller, scrollSpy } from 'react-scroll';
 import { Bars3BottomRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
@@ -27,7 +28,7 @@ const NavBar = ({ token, setToken, role, setRole, volunteerFormCompleted, setVol
         }, 800); // Duration of the scroll
     };
 
-    // Handle the navigation and scroll logic
+    // Handle navigation and scroll logic
     const handleLinkClick = (section) => {
         if (location.pathname === '/') {
             scrollToSection(section);
@@ -43,7 +44,7 @@ const NavBar = ({ token, setToken, role, setRole, volunteerFormCompleted, setVol
             setTimeout(() => {
                 scrollToSection(pendingScroll);
                 setPendingScroll(null); // Reset pending scroll
-            }, 200); // Add a delay of 200ms to ensure DOM is ready
+            }, 200);
         }
     }, [location, pendingScroll]);
 

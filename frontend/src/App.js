@@ -1,3 +1,4 @@
+//frontend\src\App.js
 import React, { useState, useEffect } from 'react';
 import { ThemeProvider, CssBaseline } from '@mui/material';
 import theme from './theme'; // Import the theme
@@ -70,6 +71,7 @@ function App() {
           <Route path="/volunteermanagmentform" element={<Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted}/>} />
           <Route path="/eventmanagmentform" element={<EventForm />} />
           <Route path="/notifs" element={<Notifications />} />
+          <Route path="/verify" element={<Verification />} />
         </Routes>
       </Router>
     </ThemeProvider>
