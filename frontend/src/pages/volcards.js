@@ -1,25 +1,26 @@
-import React, { useEffect, useState } from 'react';  // Import hooks for state and effect
+import React, { useEffect, useState } from 'react';
 import { Typography, Box, Button } from '@mui/material';
 import '../index.css';
 import volcards from './volcards.css';
-import axios from 'axios';  // Import Axios for API calls
+import axios from 'axios';
 
-function VolunteerMatchingForm() {
+function VolunteerMatchingForm({ eventId }) {  // Pass eventId as a prop to specify the event
   // State to store event and volunteers fetched from the backend
   const [volunteers, setVolunteers] = useState([]);
   const [eventName, setEventName] = useState('');
 
   // Fetch data from the backend when the component loads
   useEffect(() => {
-    axios.get('/api/volcards')  // API endpoint to fetch event and volunteers data
+    // Fetch event details and registered volunteers for the given event ID
+    axios.get(`/api/events/${eventId}`)
       .then((response) => {
-        setVolunteers(response.data.volunteers);  // Set the volunteers in state
-        setEventName(response.data.eventName);    // Set the event name in state
+        setVolunteers(response.data.registeredVolunteers);  // Set the volunteers in state
+        setEventName(response.data.name);    // Set the event name in state
       })
       .catch((error) => {
         console.error('Error fetching data:', error);
       });
-  }, []);
+  }, [eventId]);
 
   return (
     <div>
@@ -35,7 +36,7 @@ function VolunteerMatchingForm() {
             {volunteers.map((volunteer, index) => (  // Map through volunteers fetched from API
               <div className="card" key={index}>
                 <div className="avatar"></div>
-                <h3>{volunteer.name}</h3>
+                <h3>{volunteer.firstName} {volunteer.lastName}</h3>
                 <div className="tags">
                   {volunteer.skills.map((skill, idx) => (
                     <span key={idx}>{skill}</span>  // Display volunteer skills
@@ -60,3 +61,4 @@ function VolunteerMatchingForm() {
 }
 
 export default VolunteerMatchingForm;
+
