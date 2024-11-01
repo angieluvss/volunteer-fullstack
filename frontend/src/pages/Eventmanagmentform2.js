@@ -1,17 +1,16 @@
-//frontend\src\pages\Eventmanagmentform2.js
-//frontend\src\pages\Eventmanagmentform2.js
-//frontend\src\pages\Eventmanagmentform2.js
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import React, { useState, useEffect } from 'react';
-
 import axios from 'axios';
-//import DatePicker from "react-multi-date-picker";
-import DatePicker from 'react-datepicker';  // Import the new DatePicker
-import 'react-datepicker/dist/react-datepicker.css';  // Import the DatePicker styles
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import Select from 'react-select';
 
 const EventForm = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isChangingEvent = location.state?.isChangingEvent || false;
+  const event = location.state?.event || {}; // Get event data from state if editing
+
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -26,10 +25,30 @@ const EventForm = () => {
     skillsRequired: [],
     urgency: ''
   });
-  const [states, setStates] = useState([]); 
+
+  const [states, setStates] = useState([]);
   const [error, setError] = useState('');
-  const token = localStorage.getItem('token'); // Assuming the admin is authenticated with JWT
-  
+  const token = localStorage.getItem('token'); // Retrieve token for authentication
+
+  // Populate formData if editing an existing event
+  useEffect(() => {
+    if (isChangingEvent) {
+      setFormData({
+        name: event.name || '',
+        description: event.description || '',
+        address1: event.address?.address1 || '',
+        address2: event.address?.address2 || '',
+        city: event.address?.city || '',
+        state: event.address?.state || '',
+        zipcode: event.address?.zipcode || '',
+        date: event.date ? new Date(event.date) : '', // Convert date to Date object if available
+        timeStart: event.timeStart || '',
+        timeEnd: event.timeEnd || '',
+        skillsRequired: event.skillsRequired || [],
+        urgency: event.urgency || ''
+      });
+    }
+  }, [isChangingEvent, event]);
 
   useEffect(() => {
     const fetchStates = async () => {
@@ -68,68 +87,48 @@ const EventForm = () => {
     });
   };
 
-  // Handle form submission
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   // Log the date for debugging
-  //   console.log("Selected Date:", formData.date);
-
-  //   // Try to convert the date into a valid Date object
-  //   const selectedDate = new Date(formData.date);
-
-  //   if (isNaN(selectedDate.getTime())) {
-  //     setError('Invalid date selected');
-  //     return;
-  //   }
-
-  //   // Format the date to ISO string
-  //   const formattedDate = selectedDate.toISOString();
-
-  //   try {
-  //     await axios.post(
-  //       'http://localhost:4000/api/events/create',
-  //       {
-  //         ...formData,
-  //         date: formData.date ? formData.date.toISOString() : '',  // Format date before submission
-  //       },
-  //       { headers: { Authorization: `Bearer ${token}` } }
-  //     );
-  //     navigate('/admin-dashboard');  // Redirect to admin dashboard after event creation
-  //   } catch (err) {
-  //     console.error("Error during event creation:", err.response?.data);  // Log detailed error message
-  //     setError('Failed to create event');
-  //   }
-  // };
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
     const selectedDate = new Date(formData.date);
     if (isNaN(selectedDate.getTime())) {
       setError('Invalid date selected');
       return;
     }
-  
+
     const formattedDate = selectedDate.toISOString();
-  
+
     try {
-      await axios.post(
-        'http://localhost:4000/api/events/create',
-        {
-          ...formData,
-          date: formattedDate,
-          timeStart: formData.timeStart,
-          timeEnd: formData.timeEnd
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      if (isChangingEvent) {
+        // Update existing event
+        await axios.put(
+          `http://localhost:4000/api/events/${event._id}`, // Update URL to match your API
+          {
+            ...formData,
+            date: formattedDate,
+            timeStart: formData.timeStart,
+            timeEnd: formData.timeEnd
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } else {
+        // Create a new event
+        await axios.post(
+          'http://localhost:4000/api/events/create',
+          {
+            ...formData,
+            date: formattedDate,
+            timeStart: formData.timeStart,
+            timeEnd: formData.timeEnd
+          },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      }
       navigate('/admin-dashboard');
     } catch (err) {
       console.error("Error during event creation:", err.response?.data);
       setError('Failed to create event');
     }
   };
-  
 
   return (
     <>
@@ -140,7 +139,6 @@ const EventForm = () => {
           <form onSubmit={handleSubmit}>
 
             <div className='flex flex-col items-center'>
-
               {/* Event Name */}
               <div className="mb-4 w-[50%]">
                 <label htmlFor="name" className="block mb-2 font-bold">Event Name *</label>
@@ -223,7 +221,7 @@ const EventForm = () => {
                       {state.name}
                     </option>
                   ))}
-                  </select>
+                </select>
                 
                 <input
                   type="number"
@@ -241,7 +239,6 @@ const EventForm = () => {
             </div>
 
             <div className='flex gap-4'>
-
               {/* Required Skills */}
               <div className="mb-4 w-[50%]">
                 <label htmlFor="skillsRequired" className="block mb-2 font-bold">Select Required Skills *</label>
@@ -275,14 +272,12 @@ const EventForm = () => {
             {/* Date and Time */}
             <div className="mb-6">
               <label className="block mb-2 font-bold">Date of Event *</label>
-              <div className="flex flex-col gap-4">
-                <DatePicker
-                  selected={formData.date}
-                  onChange={(date) => setFormData({ ...formData, date })}  // Update date state on change
-                  dateFormat="yyyy/MM/dd"
-                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
-                />
-              </div>
+              <DatePicker
+                selected={formData.date}
+                onChange={(date) => setFormData({ ...formData, date })}  // Update date state on change
+                dateFormat="yyyy/MM/dd"
+                className="w-full px-3 py-2 border rounded-md bg-gray-100"
+              />
             </div>
             <div className="mb-6">
               <label className="block mb-2 font-bold">Time Start *</label>
@@ -310,18 +305,29 @@ const EventForm = () => {
               />
             </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full px-4 py-3 font-bold text-white bg-[#e21c34] rounded-md hover:bg-red-700"
-            >
-              Complete
-            </button>
-
+            {/* Submit and Cancel Buttons */}
+            <div className="flex justify-between">
+              <button
+                type="submit"
+                className="px-4 py-3 font-bold text-white bg-[#e21c34] rounded-md hover:bg-red-700"
+              >
+                Complete
+              </button>
+              {isChangingEvent && (
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="px-4 py-3 font-bold text-[#e21c34] bg-white border border-[#e21c34] rounded-md hover:bg-red-100"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </div>
     </>
   ); 
 }
+
 export default EventForm;

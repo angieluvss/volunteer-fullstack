@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import NavBar from '../components/NavBar'; // Ensure the path is correct
+import NavBar from '../components/NavBar';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = ({ token, setToken }) => {
@@ -53,13 +53,18 @@ const AdminDashboard = ({ token, setToken }) => {
           {/* Event Cards */}
           <div className="grid grid-cols-2 gap-8">
             {events.length > 0 ? (
-              events.map((event) => (
-                <div key={event._id} className="mb-6 p-6 border border-red-600 rounded-lg text-center">
-                  <h6 className="text-lg font-bold mb-2">{event.name}</h6>
-                  <p>{event.description}</p>
-                  <p>{new Date(event.date).toLocaleDateString()}</p>
+              events.map((currentEvent) => (
+                <div key={currentEvent._id} className="mb-6 p-6 border border-red-600 rounded-lg text-center">
+                  <h6 className="text-lg font-bold mb-2">{currentEvent.name}</h6>
+                  <p>{currentEvent.description}</p>
+                  <p>{new Date(currentEvent.date).toLocaleDateString()}</p>
                   <div className="flex justify-between gap-4 mt-4">
-                    <span className="text-red-600 cursor-pointer">edit</span>
+                    <span 
+                      onClick={() => navigate('/eventmanagmentform', { state: { event: currentEvent, isChangingEvent: true } })}
+                      className="text-red-600 cursor-pointer"
+                    >
+                      edit
+                    </span>
                     <button onClick={() => navigate('/volcards')} className="text-red-600 cursor-pointer">volunteers</button>
                   </div>
                 </div>
