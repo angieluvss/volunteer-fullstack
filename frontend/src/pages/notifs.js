@@ -1,22 +1,26 @@
+//frontend\src\pages\notifs.js
 import React, { useEffect, useState } from 'react';
 import './notifs.css'; // Import the CSS file
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'; // Import axios
 
+
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]); // State to store notifications
   const navigate = useNavigate();
 
+
   // Fetch notifications from an API when the component mounts
   useEffect(() => {
-    axios.get('/api/notifications') // Assuming you have an API endpoint for notifications
+    axios.get('http://localhost:4000/api/notifications') // Full URL for Axios request
       .then(response => {
         setNotifications(response.data); // Update state with fetched notifications
       })
       .catch(error => {
         console.error('Error fetching notifications:', error);
       });
-  }, []); // Empty array means this will run once when the component mounts
+  }, []);// Empty array means this will run once when the component mounts
+
 
   return (
     <div className="updates-container">
@@ -26,6 +30,7 @@ const Notifications = () => {
         <span>View all notices you need to be aware of</span>
         <button onClick={() => navigate('/volunteer-dashboard')} className="close-button">✖</button>
       </div>
+
 
       {/* Render fetched notifications */}
       {notifications.length > 0 ? (
@@ -47,5 +52,5 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
 
+export default Notifications;
