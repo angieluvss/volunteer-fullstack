@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Typography, Box, Button } from '@mui/material';
 import '../index.css';
-import volcards from './volcards.css';
+import './volcards.css';
 import axios from 'axios';
 
 function VolunteerMatchingForm({ eventId }) {  // Pass eventId as a prop to specify the event
