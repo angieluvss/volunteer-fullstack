@@ -12,14 +12,14 @@ const Notifications = () => {
 
   // Fetch notifications from an API when the component mounts
   useEffect(() => {
-    axios.get('http://localhost:4000/api/notifications') // Full URL for Axios request
+    axios.get('/api/notifications') // Assuming you have an API endpoint for notifications
       .then(response => {
         setNotifications(response.data); // Update state with fetched notifications
       })
       .catch(error => {
         console.error('Error fetching notifications:', error);
       });
-  }, []);// Empty array means this will run once when the component mounts
+  }, []); // Empty array means this will run once when the component mounts
 
 
   return (
