@@ -11,6 +11,9 @@ import axios from 'axios';
 const VolunteerDashboard = () => {
     const navigate = useNavigate();
 
+    // State to hold volunteer name
+    const [volunteerName, setVolunteerName] = useState('Volunteer');
+
     // State to hold RSVP and Scheduled events
     const [rsvpEvents, setRsvpEvents] = useState([]);
     const [scheduledEvents, setScheduledEvents] = useState([]);
@@ -21,41 +24,76 @@ const VolunteerDashboard = () => {
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
     const [showUnregisterButton, setShowUnregisterButton] = useState(false); //for the modal of events in calendar view
 
-
-// Fetch events from backend on component mount
-useEffect(() => {
-    const fetchEvents = async () => {
-        try {
-            const token = localStorage.getItem('token'); // Get the JWT token from localStorage (or wherever you store it)
-
-            // Check if the token exists
-            if (!token) {
-                console.error("No token found");
-                return;
+    // fetch name of user from backend
+    useEffect(() => {
+        const fetchName = async () => {
+            try {
+                const token = localStorage.getItem('token'); 
+                if (!token) {
+                    console.error("No token found");
+                    return;
+                }
+    
+                // Decode the token and log it to verify the contents
+                const decodedToken = jwtDecode(token);
+                console.log("Decoded Token:", decodedToken); // Ensure it contains userId or name
+    
+                // Call the backend endpoint without the volunteerId in the URL
+                const profileResponse = await axios.get('http://localhost:4000/api/volunteers/profile', {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+    
+                const { firstName } = profileResponse.data; // Extract only firstName
+                setVolunteerName(firstName); // Set volunteer name to first name only
+            } catch (error) {
+                console.error("Error fetching volunteer name:", error.message);
+                if (error.response) {
+                    console.error("Error status:", error.response.status);
+                    console.error("Error data:", error.response.data);
+                }
             }
+        };
+    
+        fetchName();
+    }, []);
+    
 
-            // Fetch RSVP events (available events) with Authorization header
-            const rsvpResponse = await axios.get('http://localhost:4000/api/events/available', {
-                headers: {
-                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+    // Fetch events from backend on component mount
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const token = localStorage.getItem('token'); // Get the JWT token from localStorage (or wherever you store it)
+
+                // Check if the token exists
+                if (!token) {
+                    console.error("No token found");
+                    return;
                 }
-            });
-            setRsvpEvents(rsvpResponse.data);
 
-            // Fetch Scheduled events (registered events) with Authorization header
-            const scheduledResponse = await axios.get('http://localhost:4000/api/events/scheduled', {
-                headers: {
-                    Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
-                }
-            });
-            setScheduledEvents(scheduledResponse.data);
-        } catch (error) {
-            console.error("Error fetching events:", error);
-        }
-    };
+                // Fetch RSVP events (available events) with Authorization header
+                const rsvpResponse = await axios.get('http://localhost:4000/api/events/available', {
+                    headers: {
+                        Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                    }
+                });
+                setRsvpEvents(rsvpResponse.data);
 
-    fetchEvents(); // Call the function to fetch data
-}, []); // Empty dependency array ensures this runs only once on mount
+                // Fetch Scheduled events (registered events) with Authorization header
+                const scheduledResponse = await axios.get('http://localhost:4000/api/events/scheduled', {
+                    headers: {
+                        Authorization: `Bearer ${token}`  // Pass the token in the Authorization header
+                    }
+                });
+                setScheduledEvents(scheduledResponse.data);
+            } catch (error) {
+                console.error("Error fetching events:", error);
+            }
+        };
+
+        fetchEvents(); // Call the function to fetch data
+    }, []); // Empty dependency array ensures this runs only once on mount
 
 
     // Sort events by urgency (high > medium > low)
@@ -198,7 +236,7 @@ useEffect(() => {
                 <div className='header-container flex items-center justify-between flex-col md:flex-row gap-4 md:gap-0'>
                     <div className='flex flex-col items-center md:items-start'>
                         <h1 className='text-4xl md:text-5xl font-bold text-lava_black text-center md:text-left'>
-                            Hello [Volunteer Name]
+                            Hello {volunteerName}
                         </h1>
                         <button className='edit-profile-button mt-2 text-sm text-gray-500 hover:underline' onClick={() => navigate('/volunteermanagmentform', { state: { isEditing: true } })}>
                             edit profile
