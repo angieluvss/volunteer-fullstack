@@ -82,6 +82,14 @@ const AdminDashboard = ({ token, setToken }) => {
             >
               Run Matches
             </button>
+
+            <button
+              onClick={() => navigate('/reports')}
+              className="text-2xl py-4 px-24 border-2 border-red-600 hover:bg-red-600 hover:text-white transition-all uppercase tracking-wider font-semibold rounded-lg"
+            >
+              Reports
+            </button>
+            
           </div>
   
           {/* Display error message if there is an error */}

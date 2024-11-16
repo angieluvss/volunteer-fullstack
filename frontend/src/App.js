@@ -15,6 +15,8 @@ import Volunteermanagmentform from './pages/Volunteermanagmentform2';
 import EventForm from './pages/Eventmanagmentform2';
 import Notifications from './pages/notifs';
 import Verification from './pages/Verification';
+import Reports from './pages/Reports';
+
 import { jwtDecode } from 'jwt-decode';
 import { fetchProfileStatus } from './utils/fetchProfileStatus';
 import axios from 'axios';
@@ -56,6 +58,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login setToken={setToken} setRole={setRole} setVolunteerFormCompleted={setVolunteerFormCompleted} />} />
           <Route path="/register" element={<Register setToken={setToken} setRole={setRole} setVolunteerFormCompleted={setVolunteerFormCompleted} />} />
+          <Route path="/reports" element={<Reports />} />
           
           {/* Protected Routes */}
           <Route 
