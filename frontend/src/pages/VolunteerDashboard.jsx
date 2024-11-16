@@ -45,13 +45,45 @@ const VolunteerDashboard = () => {
 
     // Handle changes to specific date times
     const handleSpecificDateTimeChange = (id, field, value) => {
-        setSpecificDates((prev) =>
-          prev.map((entry) => {
+    setSpecificDates((prev) =>
+        prev.map((entry) => {
+        const identifier = entry._id || entry.tempId;
+        if (identifier === id) {
+            return { ...entry, [field]: value, isAllDay: false }; // Uncheck "Available all day" when times are set
+        }
+        return entry;
+        })
+    );
+    };
+
+
+
+    // Handle Block Entire Day Checkbox Change
+    const handleBlockEntireDayChange = (id, isChecked) => {
+        setBlockedDates((prev) =>
+        prev.map((entry) => {
             const identifier = entry._id || entry.tempId;
-            return identifier === id ? { ...entry, [field]: value } : entry;
-          })
+            if (identifier === id) {
+            return { ...entry, isAllDay: isChecked };
+            }
+            return entry;
+        })
         );
-      };
+    };
+
+
+    // Handle changes to blocked date times
+    const handleBlockedDateTimeChange = (id, field, value) => {
+        setBlockedDates((prev) =>
+        prev.map((entry) => {
+            const identifier = entry._id || entry.tempId;
+            if (identifier === id) {
+            return { ...entry, [field]: value, isAllDay: false }; // Uncheck "Block Entire Day" when times are set
+            }
+            return entry;
+        })
+        );
+    };
 
     // Fetch availability from the backend
     const fetchAvailability = async () => {
@@ -81,21 +113,24 @@ const VolunteerDashboard = () => {
         // Map over specific and blocked dates to include _id and convert date strings to Date objects
         setSpecificDates(
             specific.map((entry) => ({
-            _id: entry._id,
-            date: new Date(entry.date),
-            start: entry.start || '',
-            end: entry.end || '',
+              _id: entry._id,
+              date: new Date(entry.date),
+              start: entry.start || '',
+              end: entry.end || '',
+              isAllDay: entry.isAllDay || false,
             }))
-        );
+          );
     
-        setBlockedDates(
+
+          setBlockedDates(
             blocked.map((entry) => ({
-            _id: entry._id,
-            date: new Date(entry.date),
-            start: entry.start || '',
-            end: entry.end || '',
+              _id: entry._id,
+              date: new Date(entry.date),
+              start: entry.start || '',
+              end: entry.end || '',
+              isAllDay: entry.isAllDay || false,
             }))
-        );
+          );
         } catch (error) {
         console.error('Error fetching availability:', error);
         }
@@ -110,71 +145,74 @@ const VolunteerDashboard = () => {
     // Save availability to the backend
     const handleSaveAvailability = async () => {
         try {
-          const token = localStorage.getItem('token');
-          if (!token) {
+        const token = localStorage.getItem('token');
+        if (!token) {
             console.error('No token found');
             return;
-          }
-      
-          // Prepare data to send
-          const updates = {};
-      
-          // Include general availability
-          updates.generalAvailability = generalAvailability;
-      
+        }
+    
+        // Prepare data to send
+        const updates = {};
+    
+        // Include general availability
+        updates.generalAvailability = generalAvailability;
+    
         // Include specific dates
         updates.specificDates = specificDates.map((entry) => {
             const data = {
             date: entry.date.toISOString(),
             start: entry.start || '',
             end: entry.end || '',
+            isAllDay: entry.isAllDay || false, // Include isAllDay flag
             };
             if (isValidObjectId(entry._id)) {
             data._id = entry._id;
             }
             return data;
         });
-
-        // Include blocked dates
+    
+        // Include blocked dates (assuming you already handle isAllDay there)
         updates.blockedDates = blockedDates.map((entry) => {
             const data = {
             date: entry.date.toISOString(),
             start: entry.start || '',
             end: entry.end || '',
+            isAllDay: entry.isAllDay || false,
             };
             if (isValidObjectId(entry._id)) {
             data._id = entry._id;
             }
             return data;
         });
-      
-          // Include IDs of entries to delete
-          if (specificDatesToDelete.length > 0) {
+    
+        // Include IDs of entries to delete
+        if (specificDatesToDelete.length > 0) {
             updates.specificDatesToDelete = specificDatesToDelete;
-          }
-          if (blockedDatesToDelete.length > 0) {
+        }
+        if (blockedDatesToDelete.length > 0) {
             updates.blockedDatesToDelete = blockedDatesToDelete;
-          }
-      
-          // Send the updates to the backend
-          await axios.patch('http://localhost:4000/api/volunteers/availability', updates, {
+        }
+    
+        // Send the updates to the backend
+        await axios.patch('http://localhost:4000/api/volunteers/availability', updates, {
             headers: { Authorization: `Bearer ${token}` },
-          });
-      
-          // Clear the deletion lists after successful update
-          setSpecificDatesToDelete([]);
-          setBlockedDatesToDelete([]);
-      
-          alert('Availability updated successfully!');
+        });
+    
+        // Clear the deletion lists after successful update
+        setSpecificDatesToDelete([]);
+        setBlockedDatesToDelete([]);
+    
+        alert('Availability updated successfully!');
         } catch (error) {
-          if (error.response && error.response.data.msg) {
+        if (error.response && error.response.data.msg) {
             alert(error.response.data.msg);
-          } else {
+        } else {
             console.error('Error saving availability:', error);
             alert('Failed to save availability.');
-          }
         }
-      };
+        }
+    };
+    
       
     
 
@@ -384,11 +422,24 @@ const VolunteerDashboard = () => {
 
     // Handle adding a specific date
     const handleAddSpecificDate = (date) => {
-    setSpecificDates((prev) => [
-        ...prev,
-        { tempId: uuidv4(), date, start: '', end: '' },
-    ]);
+        // Check if the date already exists in specificDates
+        const dateExists = specificDates.some(
+        (entry) => entry.date.toDateString() === date.toDateString()
+        );
+    
+        if (!dateExists) {
+        setSpecificDates((prev) => [
+            ...prev,
+            { tempId: uuidv4(), date, start: '', end: '', isAllDay: true }, // default to available all day
+        ]);
+        } else {
+        // Optionally, show a message to the user
+        alert('This date is already added.');
+        }
     };
+  
+  
+
     
     // Remove a specific date
     const handleRemoveSpecificDate = (id) => {
@@ -400,22 +451,59 @@ const VolunteerDashboard = () => {
           setSpecificDatesToDelete((prev) => [...prev, id]);
         }
       };
-    
+
     // Handle adding a blocked date
     const handleBlockDate = (date) => {
-    setBlockedDates((prev) => [
-        ...prev,
-        { tempId: uuidv4(), date, start: '', end: '' },
-    ]);
-    };
+        // Check if the date already exists in blockedDates
+        const dateExists = blockedDates.some(
+        (entry) => entry.date.toDateString() === date.toDateString()
+        );
     
+        if (!dateExists) {
+        setBlockedDates((prev) => [
+            ...prev,
+            { tempId: uuidv4(), date, start: '', end: '', isAllDay: true }, // default to blocking entire day
+        ]);
+        } else {
+        // Optionally, show a message to the user
+        alert('This date is already blocked.');
+        }
+    };
+  
+  
     // Remove a blocked date
     const handleRemoveBlockedDate = (id) => {
-        setBlockedDates((prev) => prev.filter((entry) => entry._id !== id));
+        setBlockedDates((prev) =>
+        prev.filter((entry) => {
+            const identifier = entry._id || entry.tempId;
+            return identifier !== id;
+        })
+        );
         if (isValidObjectId(id)) {
         setBlockedDatesToDelete((prev) => [...prev, id]);
         }
     };
+
+    // Handle "Available All Day" Checkbox Change
+    const handleSpecificDateAllDayChange = (id, isChecked) => {
+    setSpecificDates((prev) =>
+        prev.map((entry) => {
+        const identifier = entry._id || entry.tempId;
+        if (identifier === id) {
+            if (isChecked) {
+            // Clear start and end times when available all day
+            return { ...entry, isAllDay: true, start: '', end: '' };
+            } else {
+            // Keep start and end times as they are
+            return { ...entry, isAllDay: false };
+            }
+        }
+        return entry;
+        })
+    );
+    };
+
+  
     
     // Helper function to check if an ID is a valid MongoDB ObjectId
     const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
@@ -717,141 +805,214 @@ const VolunteerDashboard = () => {
       </div>
 
       {/* Specific Dates */}
-      <div className="w-full">
+        <div className="w-full">
         <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Specific Dates</h2>
         <div className="flex flex-col gap-4">
-          <div className="w-full overflow-auto">
+            <div className="w-full overflow-auto">
             <Calendar
-              tileContent={({ date }) => {
+            tileContent={({ date }) => {
                 const isAdded = specificDates.some(
-                  (d) => d.date.toDateString() === date.toDateString()
+                (d) => d.date.toDateString() === date.toDateString()
                 );
                 return isAdded ? (
-                  <div className="calendar-event-tile-container">
+                <div className="calendar-event-tile-container">
                     <Typography
-                      className="calendar-event-text calendar-event-tile"
-                      style={{ cursor: 'pointer', color: 'green' }}
+                    className="calendar-event-text calendar-event-tile"
+                    style={{ cursor: 'pointer', color: 'green' }}
                     >
-                      ✔
+                    ✔
                     </Typography>
-                  </div>
+                </div>
                 ) : null;
-              }}
-              onClickDay={handleAddSpecificDate}
-              className="custom-calendar w-full"
-              minDate={new Date()}
+            }}
+                onClickDay={handleAddSpecificDate}
+                className="custom-calendar w-full"
+                minDate={new Date()}
             />
-          </div>
-          {specificDates.map((entry) => (
-            <div
-              key={entry._id}
-              className="flex flex-wrap items-center justify-between bg-light_pink p-2 rounded-lg shadow-md"
-            >
-              <Typography
-                sx={{
-                  fontFamily: 'Inter',
-                  fontSize: '1rem',
-                  color: '#352F36',
-                }}
-              >
-                {entry.date.toDateString()}
-              </Typography>
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="time"
-                  value={entry.start || ''}
-                  onChange={(e) => handleSpecificDateTimeChange(entry._id, 'start', e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1 w-24"
-                />
-                <span>to</span>
-                <input
-                  type="time"
-                  value={entry.end || ''}
-                  onChange={(e) => handleSpecificDateTimeChange(entry._id, 'end', e.target.value)}
-                  className="border border-gray-300 rounded px-2 py-1 w-24"
-                />
-              </div>
-              <Button
-                onClick={() => handleRemoveSpecificDate(entry._id)}
-                sx={{
-                  minWidth: '28px',
-                  height: '28px',
-                  padding: 0,
-                  color: '#fff',
-                  backgroundColor: '#ff4c4c',
-                  borderRadius: '50%',
-                  '&:hover': {
-                    backgroundColor: '#ff7a7a',
-                  },
-                }}
-              >
-                ×
-              </Button>
             </div>
-          ))}
+            {specificDates.map((entry) => (
+            <div
+                key={entry._id || entry.tempId}
+                className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
+            >
+                {/* Remove Button */}
+                <Button
+                onClick={() => handleRemoveSpecificDate(entry._id || entry.tempId)}
+                sx={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    minWidth: '28px',
+                    height: '28px',
+                    padding: 0,
+                    color: '#fff',
+                    backgroundColor: '#ff4c4c',
+                    borderRadius: '50%',
+                    '&:hover': {
+                    backgroundColor: '#ff7a7a',
+                    },
+                }}
+                >
+                ×
+                </Button>
+
+                {/* Date */}
+                <Typography
+                sx={{
+                    fontFamily: 'Inter',
+                    fontSize: '1rem',
+                    color: '#352F36',
+                }}
+                >
+                {entry.date.toDateString()}
+                </Typography>
+
+                {/* Available All Day Checkbox */}
+                <div className="flex items-center gap-2 mt-2">
+                <label className="flex items-center gap-1">
+                    <input
+                    type="checkbox"
+                    checked={entry.isAllDay}
+                    onChange={(e) =>
+                        handleSpecificDateAllDayChange(entry._id || entry.tempId, e.target.checked)
+                    }
+                    />
+                    <span>Available all day</span>
+                </label>
+                </div>
+
+                {/* Time Inputs */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                <input
+                    type="time"
+                    value={entry.start || ''}
+                    onChange={(e) =>
+                    handleSpecificDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                    disabled={entry.isAllDay} // Disable when "Available all day" is checked
+                />
+                <span className="text-center sm:text-left">to</span>
+                <input
+                    type="time"
+                    value={entry.end || ''}
+                    onChange={(e) =>
+                    handleSpecificDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                    disabled={entry.isAllDay} // Disable when "Available all day" is checked
+                />
+                </div>
+            </div>
+            ))}
         </div>
-      </div>
+        </div>
+
 
       {/* Blocked Dates */}
-      <div className="w-full">
-        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Blocked Dates</h2>
+        <div className="w-full">
+        <h2 className="text-2xl font-bold text-lava_black mb-4">Blocked Dates</h2>
         <div className="flex flex-col gap-4">
-          <div className="w-full overflow-auto">
+            <div className="w-full overflow-auto">
             <Calendar
-              tileContent={({ date }) => {
+            tileContent={({ date }) => {
                 const isBlocked = blockedDates.some(
-                  (d) => new Date(d.date).toDateString() === date.toDateString()
+                (d) => d.date.toDateString() === date.toDateString()
                 );
                 return isBlocked ? (
-                  <div className="calendar-event-tile-container">
+                <div className="calendar-event-tile-container">
                     <Typography
-                      className="calendar-event-text calendar-event-tile"
-                      style={{ cursor: "pointer", color: "red" }}
+                    className="calendar-event-text calendar-event-tile"
+                    style={{ cursor: 'pointer', color: 'red' }}
                     >
-                      ✘
+                    ✘
                     </Typography>
-                  </div>
+                </div>
                 ) : null;
-              }}
-              onClickDay={handleBlockDate}
-              className="custom-calendar w-full"
-              minDate={new Date()}
+            }}
+                onClickDay={handleBlockDate}
+                className="custom-calendar w-full"
+                minDate={new Date()}
             />
-          </div>
-          {blockedDates.map((entry, index) => (
-            <div
-              key={index}
-              className="flex flex-wrap items-center justify-between bg-light_pink p-2 rounded-lg shadow-md"
-            >
-              <Typography
-                sx={{
-                  fontFamily: "Inter",
-                  fontSize: "1rem",
-                  color: "#352F36",
-                }}
-              >
-                {new Date(entry.date).toDateString()}
-              </Typography>
-              <Button
-                onClick={() => handleRemoveBlockedDate(index)}
-                sx={{
-                  minWidth: "28px",
-                  height: "28px",
-                  padding: 0,
-                  color: "#fff",
-                  backgroundColor: "#4caf50",
-                  borderRadius: "50%",
-                  "&:hover": {
-                    backgroundColor: "#45a049",
-                  },
-                }}
-              >
-                Undo
-              </Button>
             </div>
-          ))}
+            {blockedDates.map((entry) => (
+            <div
+                key={entry._id || entry.tempId}
+                className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
+            >
+                {/* Remove Button */}
+                <Button
+                onClick={() => handleRemoveBlockedDate(entry._id || entry.tempId)}
+                sx={{
+                    position: 'absolute',
+                    top: '8px',
+                    right: '8px',
+                    minWidth: '28px',
+                    height: '28px',
+                    padding: 0,
+                    color: '#fff',
+                    backgroundColor: '#ff4c4c',
+                    borderRadius: '50%',
+                    '&:hover': {
+                    backgroundColor: '#ff7a7a',
+                    },
+                }}
+                >
+                ×
+                </Button>
+
+                {/* Date */}
+                <Typography
+                sx={{
+                    fontFamily: 'Inter',
+                    fontSize: '1rem',
+                    color: '#352F36',
+                }}
+                >
+                {new Date(entry.date).toDateString()}
+                </Typography>
+
+                {/* Block Entire Day Checkbox */}
+                <div className="flex items-center gap-2 mt-2">
+                <label className="flex items-center gap-1">
+                    <input
+                    type="checkbox"
+                    checked={entry.isAllDay}
+                    onChange={(e) =>
+                        handleBlockEntireDayChange(entry._id || entry.tempId, e.target.checked)
+                    }
+                    />
+                    <span>Block entire day</span>
+                </label>
+                </div>
+
+                {/* Time Inputs */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                <input
+                    type="time"
+                    value={entry.start || ''}
+                    onChange={(e) =>
+                    handleBlockedDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                    disabled={entry.isAllDay} // Disable when "Block entire day" is checked
+                />
+                <span className="text-center sm:text-left">to</span>
+                <input
+                    type="time"
+                    value={entry.end || ''}
+                    onChange={(e) =>
+                    handleBlockedDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
+                    }
+                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                    disabled={entry.isAllDay} // Disable when "Block entire day" is checked
+                />
+                </div>
+            </div>
+            ))}
         </div>
-      </div>
+        </div>
+
     </div>
 
     {/* Save Button */}
@@ -870,7 +1031,7 @@ const VolunteerDashboard = () => {
       </Button>
     </div>
   </div>
-</div>
+            </div>
 
 
 
