@@ -6,6 +6,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './VolunteerDashboard.css'; // Custom CSS for additional styling
 import { jwtDecode } from 'jwt-decode'; 
+import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs
 import axios from 'axios';
 
 const VolunteerDashboard = () => {
@@ -18,12 +19,171 @@ const VolunteerDashboard = () => {
     const [rsvpEvents, setRsvpEvents] = useState([]);
     const [scheduledEvents, setScheduledEvents] = useState([]);
     const [tabIndex, setTabIndex] = useState(0);
-    const [availabilityDates, setAvailabilityDates] = useState([]);
+    //const [availabilityDates, setAvailabilityDates] = useState([]);
     const [openModal, setOpenModal] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
     const [showUnregisterButton, setShowUnregisterButton] = useState(false); //for the modal of events in calendar view
 
+    const [specificDatesToDelete, setSpecificDatesToDelete] = useState([]);
+    const [blockedDatesToDelete, setBlockedDatesToDelete] = useState([]);
+
+    // State for general availability, specific dates, and blocked dates
+    const [generalAvailability, setGeneralAvailability] = useState({
+        Monday: { start: "", end: "" },
+        Tuesday: { start: "", end: "" },
+        Wednesday: { start: "", end: "" },
+        Thursday: { start: "", end: "" },
+        Friday: { start: "", end: "" },
+        Saturday: { start: "", end: "" },
+        Sunday: { start: "", end: "" },
+      });
+      
+    const [specificDates, setSpecificDates] = useState([]); // Specific dates
+    const [blockedDates, setBlockedDates] = useState([]);   // Blocked dates
+
+
+    // Handle changes to specific date times
+    const handleSpecificDateTimeChange = (id, field, value) => {
+        setSpecificDates((prev) =>
+          prev.map((entry) => {
+            const identifier = entry._id || entry.tempId;
+            return identifier === id ? { ...entry, [field]: value } : entry;
+          })
+        );
+      };
+
+    // Fetch availability from the backend
+    const fetchAvailability = async () => {
+        try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+    
+        const response = await axios.get('http://localhost:4000/api/volunteers/availability', {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+    
+        const { general = {}, specific = [], blocked = [] } = response.data.availability || {};
+    
+        // Ensure all days of the week have default values
+        const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+        const defaultGeneral = daysOfWeek.reduce((acc, day) => {
+            acc[day] = { start: '', end: '' };
+            return acc;
+        }, {});
+    
+        // Merge default values with fetched general availability
+        setGeneralAvailability({ ...defaultGeneral, ...general });
+    
+        // Map over specific and blocked dates to include _id and convert date strings to Date objects
+        setSpecificDates(
+            specific.map((entry) => ({
+            _id: entry._id,
+            date: new Date(entry.date),
+            start: entry.start || '',
+            end: entry.end || '',
+            }))
+        );
+    
+        setBlockedDates(
+            blocked.map((entry) => ({
+            _id: entry._id,
+            date: new Date(entry.date),
+            start: entry.start || '',
+            end: entry.end || '',
+            }))
+        );
+        } catch (error) {
+        console.error('Error fetching availability:', error);
+        }
+    };
+    
+    // Call the fetchAvailability function inside useEffect
+    useEffect(() => {
+        fetchAvailability();
+    }, []);
+  
+    
+    // Save availability to the backend
+    const handleSaveAvailability = async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            console.error('No token found');
+            return;
+          }
+      
+          // Prepare data to send
+          const updates = {};
+      
+          // Include general availability
+          updates.generalAvailability = generalAvailability;
+      
+        // Include specific dates
+        updates.specificDates = specificDates.map((entry) => {
+            const data = {
+            date: entry.date.toISOString(),
+            start: entry.start || '',
+            end: entry.end || '',
+            };
+            if (isValidObjectId(entry._id)) {
+            data._id = entry._id;
+            }
+            return data;
+        });
+
+        // Include blocked dates
+        updates.blockedDates = blockedDates.map((entry) => {
+            const data = {
+            date: entry.date.toISOString(),
+            start: entry.start || '',
+            end: entry.end || '',
+            };
+            if (isValidObjectId(entry._id)) {
+            data._id = entry._id;
+            }
+            return data;
+        });
+      
+          // Include IDs of entries to delete
+          if (specificDatesToDelete.length > 0) {
+            updates.specificDatesToDelete = specificDatesToDelete;
+          }
+          if (blockedDatesToDelete.length > 0) {
+            updates.blockedDatesToDelete = blockedDatesToDelete;
+          }
+      
+          // Send the updates to the backend
+          await axios.patch('http://localhost:4000/api/volunteers/availability', updates, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+      
+          // Clear the deletion lists after successful update
+          setSpecificDatesToDelete([]);
+          setBlockedDatesToDelete([]);
+      
+          alert('Availability updated successfully!');
+        } catch (error) {
+          if (error.response && error.response.data.msg) {
+            alert(error.response.data.msg);
+          } else {
+            console.error('Error saving availability:', error);
+            alert('Failed to save availability.');
+          }
+        }
+      };
+      
+    
+
+    // Call the fetchAvailability function inside useEffect
+    useEffect(() => {
+        fetchAvailability();
+    }, []);   
+    
+ 
     // fetch name of user from backend
     useEffect(() => {
         const fetchName = async () => {
@@ -212,23 +372,57 @@ const VolunteerDashboard = () => {
         setTabIndex(newValue);
     };
 
-    const handleDateChange = (date) => {
-        setAvailabilityDates((prevDates) => {
-            // Toggle the date in the availabilityDates array
-            if (prevDates.some((d) => d.toDateString() === date.toDateString())) {
-                return prevDates.filter((d) => d.toDateString() !== date.toDateString());
-            } else {
-                return [...prevDates, date];
-            }
-        });
+    const handleGeneralAvailabilityChange = (day, field, value) => {
+        setGeneralAvailability((prev) => ({
+        ...prev,
+        [day]: {
+            ...prev[day],
+            [field]: value,
+        },
+        }));
     };
 
-    const removeDate = (dateToRemove) => {
-        setAvailabilityDates((prevDates) =>
-            prevDates.filter((date) => date.toDateString() !== dateToRemove.toDateString())
-        );
+    // Handle adding a specific date
+    const handleAddSpecificDate = (date) => {
+    setSpecificDates((prev) => [
+        ...prev,
+        { tempId: uuidv4(), date, start: '', end: '' },
+    ]);
     };
+    
+    // Remove a specific date
+    const handleRemoveSpecificDate = (id) => {
+        setSpecificDates((prev) => prev.filter((entry) => {
+          const identifier = entry._id || entry.tempId;
+          return identifier !== id;
+        }));
+        if (isValidObjectId(id)) {
+          setSpecificDatesToDelete((prev) => [...prev, id]);
+        }
+      };
+    
+    // Handle adding a blocked date
+    const handleBlockDate = (date) => {
+    setBlockedDates((prev) => [
+        ...prev,
+        { tempId: uuidv4(), date, start: '', end: '' },
+    ]);
+    };
+    
+    // Remove a blocked date
+    const handleRemoveBlockedDate = (id) => {
+        setBlockedDates((prev) => prev.filter((entry) => entry._id !== id));
+        if (isValidObjectId(id)) {
+        setBlockedDatesToDelete((prev) => [...prev, id]);
+        }
+    };
+    
+    // Helper function to check if an ID is a valid MongoDB ObjectId
+    const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
 
+  
+
+                    
     return (
         <section className='snap-start min-h-screen flex pt-28 justify-center font-medium font-[Inter] bg-snow'>
             <div className='flex flex-col w-3/4 gap-8'>
@@ -482,76 +676,204 @@ const VolunteerDashboard = () => {
                     </div>
                 </div>
 
-                {/* Select Next Months Availability */}
-                <div className='mb-16'>
-                    <div className='py-5 px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl'>
-                        <h1 className='text-3xl font-bold bg-light_pink text-lava_black'>Select Your Availability</h1>
-                    </div>
-                    <div className='py-5 px-10 border-2 border-light_pink rounded-b-2xl flex flex-col md:flex-row gap-8'>
-                        {/* Calendar Component */}
-                        <div className='w-full md:w-2/3'>
-                            <Calendar
-                                onClickDay={handleDateChange}
-                                minDate={new Date()} // Prevent users from selecting previous dates
-                                tileContent={({ date, view }) => {
-                                    if (availabilityDates.some(d => d.toDateString() === date.toDateString())) {
-                                        return (
-                                            <div className='calendar-event-tile-container'>
-                                                <Typography className='calendar-event-text calendar-event-tile' title="Available">
-                                                    ✔
-                                                </Typography>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                                className='custom-calendar w-full'
-                            />
-                        </div>
+                {/* Manage Availability Section */}
+                <div className="mb-16">
+  <div className="py-5 px-4 md:px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl">
+    <h1 className="text-2xl md:text-3xl font-bold bg-light_pink text-lava_black">Manage Your Availability</h1>
+  </div>
 
-                        {/* Selected Dates List */}
-                        <div className='w-full md:w-1/3'>
-                            <h2 className='text-2xl font-bold text-lava_black mb-4'>Dates</h2>
-                            <div className='flex flex-col gap-2'>
-                                {availabilityDates.map((date, index) => (
-                                    <div
-                                        key={index}
-                                        className='flex items-center justify-between bg-light_pink p-2 rounded-lg shadow-md'
-                                    >
-                                        <Typography
-                                            sx={{
-                                                fontFamily: 'Inter',
-                                                fontSize: '1rem',
-                                                color: '#352F36',
-                                            }}
-                                        >
-                                            {date.toLocaleDateString('en-CA')}
-                                        </Typography>
-                                        <Button
-                                            onClick={() => removeDate(date)}
-                                            sx={{
-                                                minWidth: '28px',
-                                                height: '28px',
-                                                padding: 0,
-                                                color: '#fff',
-                                                backgroundColor: '#ff4c4c',
-                                                borderRadius: '50%',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                '&:hover': {
-                                                    backgroundColor: '#ff7a7a',
-                                                },
-                                            }}
-                                        >
-                                            ×
-                                        </Button>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+  <div className="py-5 px-4 md:px-10 border-2 border-light_pink rounded-b-2xl flex flex-col gap-12">
+    {/* Availability Container */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {/* General Availability */}
+      <div className="w-full">
+        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">General Availability</h2>
+        <div className="flex flex-col gap-4">
+          {Object.keys(generalAvailability).map((day) => (
+            <div key={day} className="flex flex-wrap items-center justify-between gap-4">
+              <span className="text-base md:text-lg font-medium">{day}</span>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="time"
+                  value={generalAvailability[day]?.start || ""}
+                  onChange={(e) =>
+                    handleGeneralAvailabilityChange(day, "start", e.target.value)
+                  }
+                  className="border border-gray-300 rounded px-2 py-1 w-24"
+                />
+                <span>to</span>
+                <input
+                  type="time"
+                  value={generalAvailability[day]?.end || ""}
+                  onChange={(e) =>
+                    handleGeneralAvailabilityChange(day, "end", e.target.value)
+                  }
+                  className="border border-gray-300 rounded px-2 py-1 w-24"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Specific Dates */}
+      <div className="w-full">
+        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Specific Dates</h2>
+        <div className="flex flex-col gap-4">
+          <div className="w-full overflow-auto">
+            <Calendar
+              tileContent={({ date }) => {
+                const isAdded = specificDates.some(
+                  (d) => d.date.toDateString() === date.toDateString()
+                );
+                return isAdded ? (
+                  <div className="calendar-event-tile-container">
+                    <Typography
+                      className="calendar-event-text calendar-event-tile"
+                      style={{ cursor: 'pointer', color: 'green' }}
+                    >
+                      ✔
+                    </Typography>
+                  </div>
+                ) : null;
+              }}
+              onClickDay={handleAddSpecificDate}
+              className="custom-calendar w-full"
+              minDate={new Date()}
+            />
+          </div>
+          {specificDates.map((entry) => (
+            <div
+              key={entry._id}
+              className="flex flex-wrap items-center justify-between bg-light_pink p-2 rounded-lg shadow-md"
+            >
+              <Typography
+                sx={{
+                  fontFamily: 'Inter',
+                  fontSize: '1rem',
+                  color: '#352F36',
+                }}
+              >
+                {entry.date.toDateString()}
+              </Typography>
+              <div className="flex flex-wrap gap-2">
+                <input
+                  type="time"
+                  value={entry.start || ''}
+                  onChange={(e) => handleSpecificDateTimeChange(entry._id, 'start', e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 w-24"
+                />
+                <span>to</span>
+                <input
+                  type="time"
+                  value={entry.end || ''}
+                  onChange={(e) => handleSpecificDateTimeChange(entry._id, 'end', e.target.value)}
+                  className="border border-gray-300 rounded px-2 py-1 w-24"
+                />
+              </div>
+              <Button
+                onClick={() => handleRemoveSpecificDate(entry._id)}
+                sx={{
+                  minWidth: '28px',
+                  height: '28px',
+                  padding: 0,
+                  color: '#fff',
+                  backgroundColor: '#ff4c4c',
+                  borderRadius: '50%',
+                  '&:hover': {
+                    backgroundColor: '#ff7a7a',
+                  },
+                }}
+              >
+                ×
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Blocked Dates */}
+      <div className="w-full">
+        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Blocked Dates</h2>
+        <div className="flex flex-col gap-4">
+          <div className="w-full overflow-auto">
+            <Calendar
+              tileContent={({ date }) => {
+                const isBlocked = blockedDates.some(
+                  (d) => new Date(d.date).toDateString() === date.toDateString()
+                );
+                return isBlocked ? (
+                  <div className="calendar-event-tile-container">
+                    <Typography
+                      className="calendar-event-text calendar-event-tile"
+                      style={{ cursor: "pointer", color: "red" }}
+                    >
+                      ✘
+                    </Typography>
+                  </div>
+                ) : null;
+              }}
+              onClickDay={handleBlockDate}
+              className="custom-calendar w-full"
+              minDate={new Date()}
+            />
+          </div>
+          {blockedDates.map((entry, index) => (
+            <div
+              key={index}
+              className="flex flex-wrap items-center justify-between bg-light_pink p-2 rounded-lg shadow-md"
+            >
+              <Typography
+                sx={{
+                  fontFamily: "Inter",
+                  fontSize: "1rem",
+                  color: "#352F36",
+                }}
+              >
+                {new Date(entry.date).toDateString()}
+              </Typography>
+              <Button
+                onClick={() => handleRemoveBlockedDate(index)}
+                sx={{
+                  minWidth: "28px",
+                  height: "28px",
+                  padding: 0,
+                  color: "#fff",
+                  backgroundColor: "#4caf50",
+                  borderRadius: "50%",
+                  "&:hover": {
+                    backgroundColor: "#45a049",
+                  },
+                }}
+              >
+                Undo
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    {/* Save Button */}
+    <div className="flex justify-end">
+      <Button
+        onClick={handleSaveAvailability}
+        sx={{
+          backgroundColor: "#4caf50",
+          color: "#fff",
+          "&:hover": { backgroundColor: "#45a049" },
+          padding: "10px 20px",
+          fontSize: "16px",
+        }}
+      >
+        Save Availability
+      </Button>
+    </div>
+  </div>
+</div>
+
+
+
 
                 {/* Event Details Modal */}
                 <Modal

@@ -22,7 +22,7 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
     city: '',
     state: '',
     zipcode: '',
-    availability: []
+    //availability: []
   });
   const [error, setError] = useState('');
 
@@ -289,12 +289,12 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
           </div>
 
           {/* Availability */}
-          {!isEditing && (
+          {/* {!isEditing && (
             <div className="mb-6">
               <label className="block mb-2 font-bold">Select Your Availability *</label>
               <DatePicker multiple value={values} onChange={setValues} />
             </div>
-          )}
+          )} */}
 
           {/* Submit Button */}
           <div className="flex justify-between">
