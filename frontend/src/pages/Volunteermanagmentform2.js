@@ -10,8 +10,15 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
   const location = useLocation();
   const isEditing = location.state?.isEditing || false;
   const [states, setStates] = useState([]);
+  const [skills, setSkills] = useState([]);
   const [values, setValues] = useState([new Date(), new Date(new Date().setDate(new Date().getDate() + 1))]);
   const [selectedOptions, setSelectedOptions] = useState([]);
+  const [mode, setMode] = useState('autocomplete');
+  const [error, setError] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+
+  const apiKey = process.env.REACT_APP_LOCATIONIQ_API_KEY;
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,12 +29,109 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
     city: '',
     state: '',
     zipcode: '',
-    //availability: []
+    addressMode: 'autocomplete'
   });
-  const [error, setError] = useState('');
+
+  const handleModeChange = (e) => {
+    const selectedMode = e.target.value;
+  
+    if (selectedMode === 'autocomplete') {
+      // Clear address fields when switching to autocomplete
+      setFormData({
+        ...formData,
+        address1: '',
+        address2: '',
+        city: '',
+        state: '',
+        zipcode: '',
+        addressMode: selectedMode, // Update the address mode
+      });
+    } else {
+      // Retain address fields when switching to manual
+      setFormData({
+        ...formData,
+        addressMode: selectedMode, // Update the address mode
+      });
+    }
+  
+    // Update the mode
+    setMode(selectedMode);
+  
+    // Clear suggestions if switching away from autocomplete
+    if (selectedMode === 'manual') {
+      setAddressSuggestions([]);
+    }
+  };  
+
+  const handleAddressAutocomplete = async (e) => {
+    const query = e.target.value;
+    if (query.length < 3) return;
+
+    try {
+      const response = await axios.get(`https://us1.locationiq.com/v1/autocomplete.php`, {
+        params: {
+          key: apiKey,
+          q: query,
+          limit: 5,
+          countrycodes: 'us',
+          format: 'json',
+        },
+      });
+
+      const suggestions = response.data.map((location) => ({
+        fullAddress: location.display_name,
+        address1: location.address.name || '',
+        city: location.address.city || location.address.town || location.address.village || '',
+        state: location.address.state || '',
+        zipcode: location.address.postcode || '',
+      }));
+
+      setAddressSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error fetching address suggestions:', error);
+    }
+  };
+
+  const handleAddressSelect = (suggestion) => {
+    const selectedState = states.find(
+      (state) =>
+        state.name.toLowerCase() === suggestion.state.toLowerCase() ||
+        state.code.toLowerCase() === suggestion.state.toLowerCase()
+    );
+
+    setFormData({
+      ...formData,
+      address1: suggestion.address1,
+      city: suggestion.city,
+      state: selectedState ? selectedState.code : '',
+      zipcode: suggestion.zipcode,
+    });
+
+    setAddressSuggestions([]);
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
 
   // Fetch the list of states
   useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const response = await axios.get('http://localhost:4000/api/skills');
+        const sortedSkills = response.data
+          .map(skill => ({ value: skill.name, label: skill.name }))
+          .sort((a, b) => a.label.localeCompare(b.label)); // Sort alphabetically
+        setSkills(sortedSkills);
+      } catch (error) {
+        console.error('Error fetching skills:', error);
+      }
+    };
+
     const fetchStates = async () => {
       try {
         const response = await axios.get('http://localhost:4000/api/states');
@@ -36,15 +140,10 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
         console.error('Error fetching states:', error);
       }
     };
+    
+    fetchSkills();
     fetchStates();
   }, []);
-
-  const skillOptions = [
-    { value: 'Communication', label: 'Communication' },
-    { value: 'Writing', label: 'Writing' },
-    { value: 'Public Speaking', label: 'Public Speaking' },
-    { value: 'Programming', label: 'Programming' },
-  ];
 
   // Fetch volunteer profile on load
   useEffect(() => {
@@ -52,109 +151,77 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          console.error("No token found, redirecting to login.");
+          console.error('No token found, redirecting to login.');
           navigate('/login');
           return;
         }
-  
-        // Decode token and check expiration
-        const decodedToken = jwtDecode(token);
-        const currentTime = Date.now() / 1000; // in seconds
-        if (decodedToken.exp < currentTime) {
-          console.error("Token has expired, redirecting to login.");
-          localStorage.removeItem('token');
-          navigate('/login');
-          return;
-        }
-  
+
         const response = await axios.get('http://localhost:4000/api/volunteers/profile', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
+
         setFormData({
           firstName: response.data.firstName || '',
           lastName: response.data.lastName || '',
           preferences: response.data.preferences || '',
           skills: response.data.skills || [],
-          address1: response.data.address.address1 || '',
-          address2: response.data.address.address2 || '',
-          city: response.data.address.city || '',
-          state: response.data.address.state || '',
-          zipcode: response.data.address.zipcode || '',
-          availability: response.data.availability || []
+          address1: response.data.address?.address1 || '',
+          address2: response.data.address?.address2 || '',
+          city: response.data.address?.city || '',
+          state: response.data.address?.state || '',
+          zipcode: response.data.address?.zipcode || '',
         });
+
+        setMode(response.data.addressMode || 'autocomplete');
         setSelectedOptions(response.data.skills.map(skill => ({ value: skill, label: skill })));
-        setValues(response.data.availability.map(date => new Date(date)));
       } catch (err) {
         console.error('Failed to load profile:', err);
         setError('Failed to load profile');
-        // Check if error is 401 Unauthorized (token might be invalid)
-        if (err.response && err.response.status === 401) {
-          localStorage.removeItem('token');
-          navigate('/login');
-        }
       }
     };
+
     fetchProfile();
   }, [navigate]);
-
-  // Handle changes to form inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
+  
 
   // Handle skill selection
   const handleSkillChange = (selectedOption) => {
     setSelectedOptions(selectedOption);
     setFormData({
       ...formData,
-      skills: selectedOption.map(option => option.value)
+      skills: selectedOption.map(option => option.value),
     });
   };
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error("No token found, redirecting to login.");
-      navigate('/login'); // Redirect to login if no token
-      return;
-    }
-
-    console.log("Submitting profile data:", formData);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('No token found, redirecting to login.');
+        navigate('/login');
+        return;
+      }
+
       await axios.put(
         'http://localhost:4000/api/volunteers/profile',
         {
           ...formData,
-          availability: values.map(date => {
-            if (typeof date === 'string') {
-              date = new Date(date.replace(/-/g, '/'));
-            }
-            return date instanceof Date && !isNaN(date) ? date.toISOString() : null;
-          }).filter(Boolean)
+          addressMode: mode,
         },
         {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-      console.log("Profile updated successfully, redirecting to dashboard.");
+
       setVolunteerFormCompleted('completed');
       localStorage.setItem('volunteerFormCompleted', 'completed');
       navigate('/volunteer-dashboard');
     } catch (err) {
-      if (err.response) {
-        console.error("Error response:", err.response.data);
-        setError(err.response.data.msg || 'Failed to update profile');
-      } else {
-        console.error("Error:", err.message);
-        setError('Failed to update profile');
-      }
+      console.error('Failed to update profile:', err.response?.data || err.message);
+      setError('Failed to update profile');
     }
   };
 
@@ -197,48 +264,99 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
           </div>
 
           {/* Address */}
-          <div className="mb-4">
-            <label className="block mb-2 font-bold">Enter Your Address</label>
+          <div>
+            <div className="mb-4">
+              <label className="block mb-2 font-bold">Address Input Mode</label>
+              <div className="flex items-center gap-4">
+                <label>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="autocomplete"
+                    checked={mode === 'autocomplete'}
+                    onChange={handleModeChange}
+                  />
+                  Autocomplete
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="mode"
+                    value="manual"
+                    checked={mode === 'manual'}
+                    onChange={handleModeChange}
+                  />
+                  Manual
+                </label>
+              </div>
+            </div>
+
+            {/* Autocomplete Input */}
+            {mode === 'autocomplete' && (
+              <div className="mb-4">
+                <label className="block mb-2 font-bold">Search Address</label>
+                <input
+                  type="text"
+                  placeholder="Start typing your address..."
+                  onChange={handleAddressAutocomplete}
+                  className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                />
+                <ul className="border border-gray-300 bg-white rounded-md shadow-lg max-h-48 overflow-y-auto">
+                  {addressSuggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                      onClick={() => handleAddressSelect(suggestion)}
+                    >
+                      {suggestion.fullAddress}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Address Form */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <input
                 type="text"
                 id="address1"
                 name="address1"
-                value={formData.address1 || ''}
+                value={formData.address1}
                 onChange={handleChange}
                 placeholder="Address 1 *"
-                maxLength={100}
-                required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                required
+                disabled={mode === 'autocomplete'} // Disable in autocomplete mode
               />
               <input
                 type="text"
                 id="address2"
                 name="address2"
-                value={formData.address2 || ''}
+                value={formData.address2}
                 onChange={handleChange}
                 placeholder="Address 2"
-                maxLength={100}
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                disabled={mode === 'autocomplete'} // Disable in autocomplete mode
               />
               <input
                 type="text"
                 id="city"
                 name="city"
-                value={formData.city || ''}
+                value={formData.city}
                 onChange={handleChange}
                 placeholder="City *"
-                maxLength={100}
-                required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                required
+                disabled={mode === 'autocomplete'} // Disable in autocomplete mode
               />
               <select
                 name="state"
                 id="state"
-                value={formData.state || ''}
+                value={formData.state}
                 onChange={handleChange}
-                required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                required
+                disabled={mode === 'autocomplete'} // Disable in autocomplete mode
               >
                 <option value="">Select State *</option>
                 {states.map((state) => (
@@ -251,12 +369,12 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
                 type="text"
                 id="zipcode"
                 name="zipcode"
-                value={formData.zipcode || ''}
+                value={formData.zipcode}
                 onChange={handleChange}
                 placeholder="Zipcode *"
-                maxLength={9}
-                required
                 className="w-full px-3 py-2 border rounded-md bg-gray-100"
+                required
+                disabled={mode === 'autocomplete'} // Disable in autocomplete mode
               />
             </div>
           </div>
@@ -280,7 +398,7 @@ function Volunteermanagementform({ setVolunteerFormCompleted }) {
             <div className="mb-4 w-[50%]">
               <label htmlFor="skills" className="block mb-2 font-bold">Select Your Skills *</label>
               <Select
-                options={skillOptions}
+                options={skills}
                 value={selectedOptions}
                 onChange={handleSkillChange}
                 isMulti

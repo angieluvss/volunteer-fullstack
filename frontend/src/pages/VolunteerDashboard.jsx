@@ -25,6 +25,8 @@ const VolunteerDashboard = () => {
     const [rejectConfirmationOpen, setRejectConfirmationOpen] = useState(false);
     const [showUnregisterButton, setShowUnregisterButton] = useState(false); //for the modal of events in calendar view
 
+    const [calendarMode, setCalendarMode] = useState('specific'); // 'specific' or 'blocked'
+
     const [specificDatesToDelete, setSpecificDatesToDelete] = useState([]);
     const [blockedDatesToDelete, setBlockedDatesToDelete] = useState([]);
 
@@ -766,275 +768,272 @@ const VolunteerDashboard = () => {
 
                 {/* Manage Availability Section */}
                 <div className="mb-16">
-  <div className="py-5 px-4 md:px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl">
-    <h1 className="text-2xl md:text-3xl font-bold bg-light_pink text-lava_black">Manage Your Availability</h1>
-  </div>
+                    <div className="py-5 px-4 md:px-10 border-2 border-light_pink bg-light_pink rounded-t-2xl">
+                        <h1 className="text-2xl md:text-3xl font-bold bg-light_pink text-lava_black">Manage Your Availability</h1>
+                    </div>
 
-  <div className="py-5 px-4 md:px-10 border-2 border-light_pink rounded-b-2xl flex flex-col gap-12">
-    {/* Availability Container */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {/* General Availability */}
-      <div className="w-full">
-        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">General Availability</h2>
-        <div className="flex flex-col gap-4">
-          {Object.keys(generalAvailability).map((day) => (
-            <div key={day} className="flex flex-wrap items-center justify-between gap-4">
-              <span className="text-base md:text-lg font-medium">{day}</span>
-              <div className="flex flex-wrap gap-2">
-                <input
-                  type="time"
-                  value={generalAvailability[day]?.start || ""}
-                  onChange={(e) =>
-                    handleGeneralAvailabilityChange(day, "start", e.target.value)
-                  }
-                  className="border border-gray-300 rounded px-2 py-1 w-24"
-                />
-                <span>to</span>
-                <input
-                  type="time"
-                  value={generalAvailability[day]?.end || ""}
-                  onChange={(e) =>
-                    handleGeneralAvailabilityChange(day, "end", e.target.value)
-                  }
-                  className="border border-gray-300 rounded px-2 py-1 w-24"
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+                    <div className="py-5 px-4 md:px-10 border-2 border-light_pink rounded-b-2xl flex flex-col gap-12">
+                        {/* Availability Container */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {/* General Availability */}
+                            <div className="w-full">
+                                <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">General Availability</h2>
+                                <div className="flex flex-col gap-4">
+                                    {Object.keys(generalAvailability).map((day) => (
+                                        <div key={day} className="flex flex-wrap items-center justify-between gap-4">
+                                        <span className="text-base md:text-lg font-medium">{day}</span>
+                                            <div className="flex flex-wrap gap-2">
+                                                <input
+                                                type="time"
+                                                value={generalAvailability[day]?.start || ""}
+                                                onChange={(e) =>
+                                                    handleGeneralAvailabilityChange(day, "start", e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-24"
+                                                />
+                                                <span>to</span>
+                                                <input
+                                                type="time"
+                                                value={generalAvailability[day]?.end || ""}
+                                                onChange={(e) =>
+                                                    handleGeneralAvailabilityChange(day, "end", e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-24"
+                                                />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
 
-      {/* Specific Dates */}
-        <div className="w-full">
-        <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Specific Dates</h2>
-        <div className="flex flex-col gap-4">
-            <div className="w-full overflow-auto">
-            <Calendar
-            tileContent={({ date }) => {
-                const isAdded = specificDates.some(
-                (d) => d.date.toDateString() === date.toDateString()
-                );
-                return isAdded ? (
-                <div className="calendar-event-tile-container">
-                    <Typography
-                    className="calendar-event-text calendar-event-tile"
-                    style={{ cursor: 'pointer', color: 'green' }}
-                    >
-                    ✔
-                    </Typography>
+                            {/* Specific Dates */}
+                            <div className="w-full">
+                                <h2 className="text-xl md:text-2xl font-bold text-lava_black mb-4">Specific Dates</h2>
+                                <div className="flex flex-col gap-4">
+                                    <div className="w-full overflow-auto">
+                                        <Calendar
+                                        tileContent={({ date }) => {
+                                            const isAdded = specificDates.some(
+                                            (d) => d.date.toDateString() === date.toDateString()
+                                            );
+                                            return isAdded ? (
+                                            <div className="calendar-event-tile-container">
+                                                <Typography
+                                                className="calendar-event-text calendar-event-tile"
+                                                style={{ cursor: 'pointer', color: 'green' }}
+                                                >
+                                                ✔
+                                                </Typography>
+                                            </div>
+                                            ) : null;
+                                        }}
+                                            onClickDay={handleAddSpecificDate}
+                                            className="custom-calendar w-full"
+                                            minDate={new Date()}
+                                        />
+                                    </div>
+                                    {specificDates.map((entry) => (
+                                    <div
+                                        key={entry._id || entry.tempId}
+                                        className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
+                                    >
+                                        {/* Remove Button */}
+                                        <Button
+                                        onClick={() => handleRemoveSpecificDate(entry._id || entry.tempId)}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            minWidth: '28px',
+                                            height: '28px',
+                                            padding: 0,
+                                            color: '#fff',
+                                            backgroundColor: '#ff4c4c',
+                                            borderRadius: '50%',
+                                            '&:hover': {
+                                            backgroundColor: '#ff7a7a',
+                                            },
+                                        }}
+                                        >
+                                        ×
+                                        </Button>
+
+                                        {/* Date */}
+                                        <Typography
+                                        sx={{
+                                            fontFamily: 'Inter',
+                                            fontSize: '1rem',
+                                            color: '#352F36',
+                                        }}
+                                        >
+                                        {entry.date.toDateString()}
+                                        </Typography>
+
+                                        {/* Available All Day Checkbox */}
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <label className="flex items-center gap-1">
+                                                <input
+                                                type="checkbox"
+                                                checked={entry.isAllDay}
+                                                onChange={(e) =>
+                                                    handleSpecificDateAllDayChange(entry._id || entry.tempId, e.target.checked)
+                                                }
+                                                />
+                                                <span>Available all day</span>
+                                            </label>
+                                        </div>
+
+                                        {/* Time Inputs */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                                            <input
+                                                type="time"
+                                                value={entry.start || ''}
+                                                onChange={(e) =>
+                                                handleSpecificDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                                                disabled={entry.isAllDay} // Disable when "Available all day" is checked
+                                            />
+                                            <span className="text-center sm:text-left">to</span>
+                                            <input
+                                                type="time"
+                                                value={entry.end || ''}
+                                                onChange={(e) =>
+                                                handleSpecificDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                                                disabled={entry.isAllDay} // Disable when "Available all day" is checked
+                                            />
+                                        </div>
+                                    </div>
+                                    ))}
+                                </div>
+                            </div>
+
+
+                            {/* Blocked Dates */}
+                            <div className="w-full">
+                                <h2 className="text-2xl font-bold text-lava_black mb-4">Blocked Dates</h2>
+                                <div className="flex flex-col gap-4">
+                                    <div className="w-full overflow-auto">
+                                        <Calendar
+                                        tileContent={({ date }) => {
+                                            const isBlocked = blockedDates.some(
+                                            (d) => d.date.toDateString() === date.toDateString()
+                                            );
+                                            return isBlocked ? (
+                                            <div className="calendar-event-tile-container">
+                                                <Typography
+                                                className="calendar-event-text calendar-event-tile"
+                                                style={{ cursor: 'pointer', color: 'red' }}
+                                                >
+                                                ✘
+                                                </Typography>
+                                            </div>
+                                            ) : null;
+                                        }}
+                                            onClickDay={handleBlockDate}
+                                            className="custom-calendar w-full"
+                                            minDate={new Date()}
+                                        />
+                                    </div>
+                                    {blockedDates.map((entry) => (
+                                    <div
+                                        key={entry._id || entry.tempId}
+                                        className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
+                                    >
+                                        {/* Remove Button */}
+                                        <Button
+                                        onClick={() => handleRemoveBlockedDate(entry._id || entry.tempId)}
+                                        sx={{
+                                            position: 'absolute',
+                                            top: '8px',
+                                            right: '8px',
+                                            minWidth: '28px',
+                                            height: '28px',
+                                            padding: 0,
+                                            color: '#fff',
+                                            backgroundColor: '#ff4c4c',
+                                            borderRadius: '50%',
+                                            '&:hover': {
+                                            backgroundColor: '#ff7a7a',
+                                            },
+                                        }}
+                                        >
+                                        ×
+                                        </Button>
+
+                                        {/* Date */}
+                                        <Typography
+                                        sx={{
+                                            fontFamily: 'Inter',
+                                            fontSize: '1rem',
+                                            color: '#352F36',
+                                        }}
+                                        >
+                                        {new Date(entry.date).toDateString()}
+                                        </Typography>
+
+                                        {/* Block Entire Day Checkbox */}
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <label className="flex items-center gap-1">
+                                                <input
+                                                type="checkbox"
+                                                checked={entry.isAllDay}
+                                                onChange={(e) =>
+                                                    handleBlockEntireDayChange(entry._id || entry.tempId, e.target.checked)
+                                                }
+                                                />
+                                                <span>Block entire day</span>
+                                            </label>
+                                        </div>
+
+                                        {/* Time Inputs */}
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+                                            <input
+                                                type="time"
+                                                value={entry.start || ''}
+                                                onChange={(e) =>
+                                                handleBlockedDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                                                disabled={entry.isAllDay} // Disable when "Block entire day" is checked
+                                            />
+                                            <span className="text-center sm:text-left">to</span>
+                                            <input
+                                                type="time"
+                                                value={entry.end || ''}
+                                                onChange={(e) =>
+                                                handleBlockedDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
+                                                }
+                                                className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
+                                                disabled={entry.isAllDay} // Disable when "Block entire day" is checked
+                                            />
+                                        </div>
+                                    </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                        </div>
+
+                        {/* Save Button */}
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={handleSaveAvailability}
+                                sx={{
+                                backgroundColor: "#4caf50",
+                                color: "#fff",
+                                "&:hover": { backgroundColor: "#45a049" },
+                                padding: "10px 20px",
+                                fontSize: "16px",
+                                }}
+                            >
+                                Save Availability
+                            </Button>
+                        </div>
+                    </div>
                 </div>
-                ) : null;
-            }}
-                onClickDay={handleAddSpecificDate}
-                className="custom-calendar w-full"
-                minDate={new Date()}
-            />
-            </div>
-            {specificDates.map((entry) => (
-            <div
-                key={entry._id || entry.tempId}
-                className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
-            >
-                {/* Remove Button */}
-                <Button
-                onClick={() => handleRemoveSpecificDate(entry._id || entry.tempId)}
-                sx={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    minWidth: '28px',
-                    height: '28px',
-                    padding: 0,
-                    color: '#fff',
-                    backgroundColor: '#ff4c4c',
-                    borderRadius: '50%',
-                    '&:hover': {
-                    backgroundColor: '#ff7a7a',
-                    },
-                }}
-                >
-                ×
-                </Button>
-
-                {/* Date */}
-                <Typography
-                sx={{
-                    fontFamily: 'Inter',
-                    fontSize: '1rem',
-                    color: '#352F36',
-                }}
-                >
-                {entry.date.toDateString()}
-                </Typography>
-
-                {/* Available All Day Checkbox */}
-                <div className="flex items-center gap-2 mt-2">
-                <label className="flex items-center gap-1">
-                    <input
-                    type="checkbox"
-                    checked={entry.isAllDay}
-                    onChange={(e) =>
-                        handleSpecificDateAllDayChange(entry._id || entry.tempId, e.target.checked)
-                    }
-                    />
-                    <span>Available all day</span>
-                </label>
-                </div>
-
-                {/* Time Inputs */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-                <input
-                    type="time"
-                    value={entry.start || ''}
-                    onChange={(e) =>
-                    handleSpecificDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
-                    disabled={entry.isAllDay} // Disable when "Available all day" is checked
-                />
-                <span className="text-center sm:text-left">to</span>
-                <input
-                    type="time"
-                    value={entry.end || ''}
-                    onChange={(e) =>
-                    handleSpecificDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
-                    disabled={entry.isAllDay} // Disable when "Available all day" is checked
-                />
-                </div>
-            </div>
-            ))}
-        </div>
-        </div>
-
-
-      {/* Blocked Dates */}
-        <div className="w-full">
-        <h2 className="text-2xl font-bold text-lava_black mb-4">Blocked Dates</h2>
-        <div className="flex flex-col gap-4">
-            <div className="w-full overflow-auto">
-            <Calendar
-            tileContent={({ date }) => {
-                const isBlocked = blockedDates.some(
-                (d) => d.date.toDateString() === date.toDateString()
-                );
-                return isBlocked ? (
-                <div className="calendar-event-tile-container">
-                    <Typography
-                    className="calendar-event-text calendar-event-tile"
-                    style={{ cursor: 'pointer', color: 'red' }}
-                    >
-                    ✘
-                    </Typography>
-                </div>
-                ) : null;
-            }}
-                onClickDay={handleBlockDate}
-                className="custom-calendar w-full"
-                minDate={new Date()}
-            />
-            </div>
-            {blockedDates.map((entry) => (
-            <div
-                key={entry._id || entry.tempId}
-                className="bg-light_pink p-4 rounded-lg shadow-md flex flex-col relative"
-            >
-                {/* Remove Button */}
-                <Button
-                onClick={() => handleRemoveBlockedDate(entry._id || entry.tempId)}
-                sx={{
-                    position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    minWidth: '28px',
-                    height: '28px',
-                    padding: 0,
-                    color: '#fff',
-                    backgroundColor: '#ff4c4c',
-                    borderRadius: '50%',
-                    '&:hover': {
-                    backgroundColor: '#ff7a7a',
-                    },
-                }}
-                >
-                ×
-                </Button>
-
-                {/* Date */}
-                <Typography
-                sx={{
-                    fontFamily: 'Inter',
-                    fontSize: '1rem',
-                    color: '#352F36',
-                }}
-                >
-                {new Date(entry.date).toDateString()}
-                </Typography>
-
-                {/* Block Entire Day Checkbox */}
-                <div className="flex items-center gap-2 mt-2">
-                <label className="flex items-center gap-1">
-                    <input
-                    type="checkbox"
-                    checked={entry.isAllDay}
-                    onChange={(e) =>
-                        handleBlockEntireDayChange(entry._id || entry.tempId, e.target.checked)
-                    }
-                    />
-                    <span>Block entire day</span>
-                </label>
-                </div>
-
-                {/* Time Inputs */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-                <input
-                    type="time"
-                    value={entry.start || ''}
-                    onChange={(e) =>
-                    handleBlockedDateTimeChange(entry._id || entry.tempId, 'start', e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
-                    disabled={entry.isAllDay} // Disable when "Block entire day" is checked
-                />
-                <span className="text-center sm:text-left">to</span>
-                <input
-                    type="time"
-                    value={entry.end || ''}
-                    onChange={(e) =>
-                    handleBlockedDateTimeChange(entry._id || entry.tempId, 'end', e.target.value)
-                    }
-                    className="border border-gray-300 rounded px-2 py-1 w-full sm:w-24"
-                    disabled={entry.isAllDay} // Disable when "Block entire day" is checked
-                />
-                </div>
-            </div>
-            ))}
-        </div>
-        </div>
-
-    </div>
-
-    {/* Save Button */}
-    <div className="flex justify-end">
-      <Button
-        onClick={handleSaveAvailability}
-        sx={{
-          backgroundColor: "#4caf50",
-          color: "#fff",
-          "&:hover": { backgroundColor: "#45a049" },
-          padding: "10px 20px",
-          fontSize: "16px",
-        }}
-      >
-        Save Availability
-      </Button>
-    </div>
-  </div>
-            </div>
-
-
-
 
                 {/* Event Details Modal */}
                 <Modal
@@ -1164,8 +1163,6 @@ const VolunteerDashboard = () => {
                         )}
                     </Box>
                 </Modal>
-
-
 
                 {/* Confirmation of Rejecting event Modal */}
                 <Modal
