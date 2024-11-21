@@ -70,7 +70,7 @@ function App() {
             element={token ? <VolunteerDashboard /> : <Navigate to="/login" />} 
           />
           <Route path="/volunteer-history" element={<VolunteerHistory />} />
-          <Route path="/volcards" element={<VolunteerMatchingForm />} />
+          <Route path="/volcards/:eventId" element={<VolunteerMatchingForm />} />
           <Route path="/volunteermanagmentform" element={<Volunteermanagmentform setVolunteerFormCompleted={setVolunteerFormCompleted}/>} />
           <Route path="/eventmanagmentform" element={<EventForm />} />
           <Route path="/notifs" element={<Notifications />} />

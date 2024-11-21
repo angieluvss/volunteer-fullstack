@@ -13,29 +13,50 @@ const AdminDashboard = ({ token, setToken }) => {
   const [pastEvents, setPastEvents] = useState([]);
   const [matchesResult, setMatchesResult] = useState('');
 
-  const runMatches = async () => {
+  // const runMatches = async () => {
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     if (!token) {
+  //       console.error('No token found');
+  //       return;
+  //     }
+
+  //     const response = await axios.post(
+  //       'http://localhost:4000/api/events/run-matches',
+  //       {},
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     setMatchesResult(response.data.msg);
+  //     alert('Matching completed successfully!');
+  //   } catch (error) {
+  //     console.error('Error running matches:', error);
+  //     alert('Failed to run matches.');
+  //   }
+  // };
+
+  const handleRunMatch = async (eventId) => {
     try {
       const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('No token found');
-        return;
-      }
-
+      console.log('Token:', token); // Log token to ensure it's retrieved
+  
       const response = await axios.post(
-        'http://localhost:4000/api/events/run-matches',
+        `http://localhost:4000/api/events/match/${eventId}`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      setMatchesResult(response.data.msg);
-      alert('Matching completed successfully!');
+      console.log('Match Response:', response.data); // Log server response
+      alert(response.data.msg);
     } catch (error) {
-      console.error('Error running matches:', error);
-      alert('Failed to run matches.');
+      console.error('Error running match:', error.message); // Log error
+      alert('Failed to run match.');
     }
   };
+  
 
   // Fetch events when the component mounts
   useEffect(() => {
@@ -75,13 +96,6 @@ const AdminDashboard = ({ token, setToken }) => {
             >
               Create Event
             </button>
-  
-            <button
-              onClick={runMatches}
-              className="text-2xl py-4 px-24 bg-red-600 text-white hover:bg-red-700 transition-all uppercase tracking-wider font-semibold rounded-lg"
-            >
-              Run Matches
-            </button>
 
             <button
               onClick={() => navigate('/reports')}
@@ -119,11 +133,17 @@ const AdminDashboard = ({ token, setToken }) => {
                     >
                       edit
                     </span>
+                    <button onClick={() => handleRunMatch(currentEvent._id)} className="text-red-600 cursor-pointer">
+                      Run Match
+                    </button>
                     <button
-                      onClick={() => navigate('/volcards')}
-                      className="text-red-600 cursor-pointer"
+                        onClick={() => {
+                            console.log("Navigating to /volcards with eventId:", currentEvent._id);
+                            navigate(`/volcards/${currentEvent._id}`);
+                        }}
+                        className="text-red-600 cursor-pointer"
                     >
-                      volunteers ({currentEvent.volunteerCount || 0})
+                        volunteers ({currentEvent.volunteerCount || 0})
                     </button>
                   </div>
                 </div>
@@ -158,7 +178,10 @@ const AdminDashboard = ({ token, setToken }) => {
                       edit
                     </span>
                     <button
-                      onClick={() => navigate('/volcards')}
+                      onClick={() => {
+                        console.log("Navigating to /volcards with eventId:", currentEvent._id);
+                        navigate(`/volcards/${currentEvent._id}`);
+                      }}
                       className="text-gray-600 cursor-pointer"
                     >
                       volunteers ({currentEvent.volunteerCount || 0})
